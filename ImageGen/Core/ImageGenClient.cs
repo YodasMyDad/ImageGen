@@ -224,7 +224,7 @@ internal sealed class ImageGenClient : IImageGenClient
 
         // Add format/background
         var format = MapFormat(request.Format);
-        content.Add(new StringContent(format), "format");
+        content.Add(new StringContent(format), "output_format");
         if (request.TransparentBackground)
             content.Add(new StringContent("transparent"), "background");
 
@@ -262,7 +262,22 @@ internal sealed class ImageGenClient : IImageGenClient
         };
 
         var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("API request failed with status {StatusCode}: {ErrorContent}", response.StatusCode, errorContent);
+
+            // Create a more descriptive exception
+            var message = $"API request failed with status {response.StatusCode}";
+            if (!string.IsNullOrWhiteSpace(errorContent))
+            {
+                message += $": {errorContent}";
+            }
+
+            throw new ImageGenClientException(message, (int)response.StatusCode);
+        }
+
         return response;
     }
 
