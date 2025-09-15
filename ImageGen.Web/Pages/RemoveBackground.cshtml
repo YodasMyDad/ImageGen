@@ -39,14 +39,19 @@
                     </div>
                     <div class="card-body">
                         <form method="post" enctype="multipart/form-data" id="uploadForm">
+                            <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
+                            <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
+
                             <div class="upload-zone mb-3" id="uploadZone">
-                                <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
-                                <h5>Drag & drop an image here</h5>
-                                <p class="text-muted">or click to browse files</p>
+                                <div id="uploadZoneContent">
+                                    <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                                    <h5>Drag & drop an image here</h5>
+                                    <p class="text-muted">or click to browse files</p>
+                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('imageFile').click()">
+                                        <i class="bi bi-folder"></i> Choose File
+                                    </button>
+                                </div>
                                 <input type="file" name="imageFile" id="imageFile" accept="image/*" class="d-none" required>
-                                <button type="button" class="btn btn-primary" onclick="document.getElementById('imageFile').click()">
-                                    <i class="bi bi-folder"></i> Choose File
-                                </button>
                             </div>
 
                             <div class="mb-3">
@@ -56,6 +61,13 @@
                                     <option value="white">White</option>
                                 </select>
                             </div>
+
+                            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                            {
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
+                                </div>
+                            }
 
                             @if (Model.OriginalImageUrl != null)
                             {
@@ -107,11 +119,11 @@
                         else if (Model.OriginalImageUrl != null)
                         {
                             <div class="text-center py-5">
-                                <div class="spinner-border text-primary mb-3" role="status">
-                                    <span class="visually-hidden">Processing...</span>
-                                </div>
-                                <p class="text-muted">Removing background...</p>
                                 <form method="post" class="d-inline">
+                                    <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
+                                    <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
+                                    <input type="hidden" name="backgroundType" value="@Model.BackgroundType" />
+
                                     <button type="submit" class="btn btn-primary" asp-page-handler="Process">
                                         <i class="bi bi-magic"></i> Remove Background
                                     </button>
@@ -173,6 +185,7 @@
     <script>
         // Drag and drop functionality
         const uploadZone = document.getElementById('uploadZone');
+        const uploadZoneContent = document.getElementById('uploadZoneContent');
         const fileInput = document.getElementById('imageFile');
 
         uploadZone.addEventListener('dragover', (e) => {
@@ -191,19 +204,19 @@
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 fileInput.files = files;
-                // Auto-submit or show preview
-                uploadZone.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                       <h5>File selected: ${files[0].name}</h5>
-                                       <p class="text-muted">Click "Upload Image" to continue</p>`;
+                // Update content without destroying the file input
+                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                               <h5>File selected: ${files[0].name}</h5>
+                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
             }
         });
 
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                uploadZone.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                       <h5>File selected: ${file.name}</h5>
-                                       <p class="text-muted">Click "Upload Image" to continue</p>`;
+                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                               <h5>File selected: ${file.name}</h5>
+                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
             }
         });
     </script>

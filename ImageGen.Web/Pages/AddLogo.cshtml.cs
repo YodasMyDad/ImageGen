@@ -28,9 +28,15 @@ public class AddLogoModel : PageModel
     [BindProperty]
     public string? Size { get; set; }
 
+    [BindProperty]
     public string? MainImageUrl { get; set; }
+
+    [BindProperty]
     public string? LogoImageUrl { get; set; }
+
+    [BindProperty]
     public string? ProcessedImageUrl { get; set; }
+
     public string? ErrorMessage { get; set; }
 
     private string ImagesPath => Path.Combine(_environment.WebRootPath, "images");

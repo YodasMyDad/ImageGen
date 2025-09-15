@@ -25,7 +25,9 @@ public class ProductVariationsModel : PageModel
     [BindProperty]
     public int Count { get; set; } = 4;
 
+    [BindProperty]
     public string? OriginalImageUrl { get; set; }
+
     public List<string>? VariationUrls { get; set; }
     public string? ErrorMessage { get; set; }
 

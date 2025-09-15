@@ -22,8 +22,12 @@ public class ChangeBackgroundModel : PageModel
     [BindProperty]
     public string? BackgroundStyle { get; set; }
 
+    [BindProperty]
     public string? OriginalImageUrl { get; set; }
+
+    [BindProperty]
     public string? ProcessedImageUrl { get; set; }
+
     public string? ErrorMessage { get; set; }
 
     private string ImagesPath => Path.Combine(_environment.WebRootPath, "images");

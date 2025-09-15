@@ -22,8 +22,12 @@ public class EnhanceProductModel : PageModel
     [BindProperty]
     public string? EnhancementType { get; set; }
 
+    [BindProperty]
     public string? OriginalImageUrl { get; set; }
+
+    [BindProperty]
     public string? ProcessedImageUrl { get; set; }
+
     public string? ErrorMessage { get; set; }
 
     private string ImagesPath => Path.Combine(_environment.WebRootPath, "images");

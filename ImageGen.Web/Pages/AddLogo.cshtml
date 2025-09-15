@@ -39,27 +39,35 @@
                     </div>
                     <div class="card-body">
                         <form method="post" enctype="multipart/form-data" id="uploadForm">
+                            <input type="hidden" name="mainImageUrl" value="@Model.MainImageUrl" />
+                            <input type="hidden" name="logoImageUrl" value="@Model.LogoImageUrl" />
+                            <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
+
                             <div class="mb-3">
                                 <label for="mainImage" class="form-label">Main Image</label>
                                 <div class="upload-zone mb-2" id="mainUploadZone">
-                                    <i class="bi bi-image display-4 text-muted mb-2"></i>
-                                    <p class="mb-1">Drop main image here</p>
+                                    <div id="mainUploadZoneContent">
+                                        <i class="bi bi-image display-4 text-muted mb-2"></i>
+                                        <p class="mb-1">Drop main image here</p>
+                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="document.getElementById('mainImage').click()">
+                                            Browse
+                                        </button>
+                                    </div>
                                     <input type="file" name="mainImage" id="mainImage" accept="image/*" class="d-none" required>
-                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="document.getElementById('mainImage').click()">
-                                        Browse
-                                    </button>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="logoImage" class="form-label">Logo/Watermark</label>
                                 <div class="upload-zone mb-2" id="logoUploadZone">
-                                    <i class="bi bi-badge-tm display-4 text-muted mb-2"></i>
-                                    <p class="mb-1">Drop logo here</p>
+                                    <div id="logoUploadZoneContent">
+                                        <i class="bi bi-badge-tm display-4 text-muted mb-2"></i>
+                                        <p class="mb-1">Drop logo here</p>
+                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="document.getElementById('logoImage').click()">
+                                            Browse
+                                        </button>
+                                    </div>
                                     <input type="file" name="logoImage" id="logoImage" accept="image/*" class="d-none" required>
-                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="document.getElementById('logoImage').click()">
-                                        Browse
-                                    </button>
                                 </div>
                             </div>
 
@@ -83,6 +91,13 @@
                                     <option value="xlarge">Extra Large (25% of image)</option>
                                 </select>
                             </div>
+
+                            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                            {
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
+                                </div>
+                            }
 
                             @if (Model.MainImageUrl != null && Model.LogoImageUrl != null)
                             {
@@ -140,11 +155,13 @@
                         else if (Model.MainImageUrl != null && Model.LogoImageUrl != null)
                         {
                             <div class="text-center py-5">
-                                <div class="spinner-border text-warning mb-3" role="status">
-                                    <span class="visually-hidden">Processing...</span>
-                                </div>
-                                <p class="text-muted">Adding logo...</p>
                                 <form method="post" class="d-inline">
+                                    <input type="hidden" name="mainImageUrl" value="@Model.MainImageUrl" />
+                                    <input type="hidden" name="logoImageUrl" value="@Model.LogoImageUrl" />
+                                    <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
+                                    <input type="hidden" name="position" value="@Model.Position" />
+                                    <input type="hidden" name="size" value="@Model.Size" />
+
                                     <button type="submit" class="btn btn-warning" asp-page-handler="Process">
                                         <i class="bi bi-magic"></i> Add Logo
                                     </button>
@@ -202,8 +219,9 @@
 @section Scripts {
     <script>
         // Drag and drop functionality for both zones
-        function setupDropZone(zoneId, inputId) {
+        function setupDropZone(zoneId, contentId, inputId) {
             const uploadZone = document.getElementById(zoneId);
+            const uploadZoneContent = document.getElementById(contentId);
             const fileInput = document.getElementById(inputId);
 
             uploadZone.addEventListener('dragover', (e) => {
@@ -223,9 +241,10 @@
                 if (files.length > 0) {
                     fileInput.files = files;
                     const fileName = files[0].name;
-                    uploadZone.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-2"></i>
-                                           <p class="mb-1">${fileName}</p>
-                                           <small class="text-muted">File selected</small>`;
+                    // Update content without destroying the file input
+                    uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-2"></i>
+                                                   <p class="mb-1">${fileName}</p>
+                                                   <small class="text-muted">File selected</small>`;
                 }
             });
 
@@ -233,14 +252,15 @@
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     const fileName = file.name;
-                    uploadZone.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-2"></i>
-                                           <p class="mb-1">${fileName}</p>
-                                           <small class="text-muted">File selected</small>`;
+                    // Update content without destroying the file input
+                    uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-2"></i>
+                                                   <p class="mb-1">${fileName}</p>
+                                                   <small class="text-muted">File selected</small>`;
                 }
             });
         }
 
-        setupDropZone('mainUploadZone', 'mainImage');
-        setupDropZone('logoUploadZone', 'logoImage');
+        setupDropZone('mainUploadZone', 'mainUploadZoneContent', 'mainImage');
+        setupDropZone('logoUploadZone', 'logoUploadZoneContent', 'logoImage');
     </script>
 }
