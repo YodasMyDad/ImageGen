@@ -1,0 +1,229 @@
+@page
+@model ChangeBackgroundModel
+@{
+    ViewData["Title"] = "Change Background";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Change Background</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-5 fw-bold">
+                    <i class="bi bi-palette text-success"></i> Change Background
+                </h1>
+                <p class="lead text-muted">
+                    Transform your product photos by placing them in stunning new environments,
+                    from studio settings to creative scenes.
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-upload"></i> Upload Product Image
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" id="uploadForm">
+                            <div class="upload-zone mb-3" id="uploadZone">
+                                <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                                <h5>Drag & drop a product image here</h5>
+                                <p class="text-muted">or click to browse files</p>
+                                <input type="file" name="imageFile" id="imageFile" accept="image/*" class="d-none" required>
+                                <button type="button" class="btn btn-success" onclick="document.getElementById('imageFile').click()">
+                                    <i class="bi bi-folder"></i> Choose File
+                                </button>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="backgroundStyle" class="form-label">Background Style</label>
+                                <select class="form-select" id="backgroundStyle" name="backgroundStyle">
+                                    <option value="studio">Professional Studio (White)</option>
+                                    <option value="gradient">Gradient Background</option>
+                                    <option value="nature">Natural Outdoor Scene</option>
+                                    <option value="urban">Urban Environment</option>
+                                    <option value="luxury">Luxury Setting</option>
+                                    <option value="minimal">Minimalist Design</option>
+                                </select>
+                            </div>
+
+                            @if (Model.OriginalImageUrl != null)
+                            {
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i> Image uploaded successfully! Click "Change Background" to process.
+                                </div>
+                            }
+
+                            <button type="submit" class="btn btn-success w-100" asp-page-handler="Upload">
+                                <i class="bi bi-upload"></i> Upload Image
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-image"></i> Result
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        @if (Model.OriginalImageUrl != null)
+                        {
+                            <div class="mb-4">
+                                <h6>Original Product</h6>
+                                <img src="@Model.OriginalImageUrl" alt="Original" class="image-preview mb-3" style="max-height: 200px;">
+                            </div>
+                        }
+
+                        @if (Model.ProcessedImageUrl != null)
+                        {
+                            <div class="mb-4">
+                                <h6>New Background</h6>
+                                <img src="@Model.ProcessedImageUrl" alt="Background Changed" class="image-preview mb-3" style="max-height: 300px;">
+                            </div>
+
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="@Model.ProcessedImageUrl" class="btn btn-primary" download>
+                                    <i class="bi bi-download"></i> Download
+                                </a>
+                                <button class="btn btn-outline-success" onclick="location.reload()">
+                                    <i class="bi bi-arrow-clockwise"></i> Try Another
+                                </button>
+                            </div>
+                        }
+                        else if (Model.OriginalImageUrl != null)
+                        {
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-success mb-3" role="status">
+                                    <span class="visually-hidden">Processing...</span>
+                                </div>
+                                <p class="text-muted">Changing background...</p>
+                                <form method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-success" asp-page-handler="Process">
+                                        <i class="bi bi-magic"></i> Change Background
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-image display-4 mb-3"></i>
+                                <p>Upload a product image to see the background change result</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle"></i> Background Style Options
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-success"><i class="bi bi-building"></i> Professional Studio</h6>
+                                    <p class="small text-muted">Clean white backdrop perfect for e-commerce product photography.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-primary"><i class="bi bi-palette"></i> Gradient Background</h6>
+                                    <p class="small text-muted">Modern gradient colors that add visual interest without distraction.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-info"><i class="bi bi-tree"></i> Natural Outdoor</h6>
+                                    <p class="small text-muted">Place products in beautiful natural environments and landscapes.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-warning"><i class="bi bi-buildings"></i> Urban Environment</h6>
+                                    <p class="small text-muted">Modern city scenes and urban backdrops for contemporary products.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-danger"><i class="bi bi-gem"></i> Luxury Setting</h6>
+                                    <p class="small text-muted">Elegant and sophisticated backgrounds for premium products.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-secondary"><i class="bi bi-square"></i> Minimalist Design</h6>
+                                    <p class="small text-muted">Clean, simple backgrounds that let the product take center stage.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Drag and drop functionality
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('imageFile');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                // Auto-submit or show preview
+                uploadZone.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                       <h5>File selected: ${files[0].name}</h5>
+                                       <p class="text-muted">Click "Upload Image" to continue</p>`;
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                uploadZone.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                       <h5>File selected: ${file.name}</h5>
+                                       <p class="text-muted">Click "Upload Image" to continue</p>`;
+            }
+        });
+    </script>
+}

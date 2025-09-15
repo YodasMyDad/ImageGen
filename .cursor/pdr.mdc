@@ -1,0 +1,343 @@
+---
+alwaysApply: true
+---
+
+# PDR — .NET 9 NuGet Package: High‑Fidelity Image Generation & Editing
+
+**Doc status:** Draft v1.0
+ **Author:** (you)
+ **Date:** 15 Sep 2025
+ **Package (working name):** `ImageGen`
+ **Target frameworks:** `net9.0` (primary), optional `net8.0` for back-compat
+
+------
+
+## 1) Summary
+
+A .NET 9 library and NuGet package that provides a clean, resilient, and testable SDK for **image generation and editing with high input fidelity**. It wraps a provider’s Images API (e.g., OpenAI `gpt-image-1`) and exposes first‑class features for:
+
+- **High-fidelity edits** (`input_fidelity=High`) that preserve faces, logos, and distinctive details.
+- **Multi-input composition** (primary image + secondary assets such as masks, logos, or overlays) with clear precedence rules.
+- **Quality controls** (size, quality, background transparency, formats) and **token/usage tracking** hooks.
+- **Modern .NET ergonomics**: `HttpClientFactory`, `IOptions<T>`, DI, async APIs, Polly-based resilience, and OpenTelemetry tracing.
+
+The package aims to reduce boilerplate (auth, retries, file handling) and provide **simple, opinionated helpers** for common workflows: product mockups, brand-consistent ads, portrait edits, object removal, inpainting with masks, and white‑background product shots.
+
+------
+
+## 2) Goals & Non‑Goals
+
+### 2.1 Goals
+
+1. **Ergonomic API surface**: One-liners for generate/edit/variation with sensible defaults.
+2. **High-fidelity support**: First-class `InputFidelity.High` with docs on tradeoffs (cost/latency).
+3. **Multi-input workflows**: Simple composition model: **primary image** (highest fidelity preservation) + **secondary inputs** (masks, stickers, logos).
+4. **Reliability at scale**: Retries with backoff, circuit breaker, request timeouts, 429 respect (`Retry-After`), idempotency keys.
+5. **Observability**: Built-in logging (`ILogger`), metrics/events, OpenTelemetry traces, request/response correlation.
+6. **Secure configuration**: API keys via `IOptions`/environment, secret never logged.
+7. **AOT-friendly**: Trimming & NativeAOT compatible; `System.Text.Json` source generators for DTOs.
+8. **Extensibility**: Provider abstraction so future engines (e.g., other vendors or self-hosted) can be plugged in.
+
+### 2.2 Non‑Goals
+
+- Building a GUI or full asset manager.
+- Deterministic rendering guarantees (image models are probabilistic).
+- On‑device inference; this package is a **client** for remote APIs.
+
+------
+
+## 3) Users & Key Use Cases
+
+- **Web apps / CMS** (e.g., ZauberCMS integrations): marketing asset generation, hero banners with brand logo preserved.
+- **E‑commerce**: background removal / white background, colorways, device mockups.
+- **Creator tools**: portrait enhancements, avatar styles that keep the person recognizable.
+- **Product teams**: batch edits via jobs; consistent prompt templates.
+
+**Representative scenarios**
+
+1. "Edit this product shot: remove table, keep logo intact, output 2048×2048 PNG with transparent background."
+2. "Composite: merge person photo (primary) with festival lights (secondary) but preserve face identity."
+3. "Generate hero banner: include brand icon (secondary), place on gradient background, add headline text."
+
+------
+
+## 4) Functional Requirements
+
+1. **Image Generation**
+   - Inputs: text prompt, optional seed, size (e.g., 1024/2048 square or WxH), `Quality` (Standard/High), `Background` (Opaque/Transparent), `Format` (PNG/JPEG/WEBP).
+   - Outputs: `ImageResult` (bytes), plus metadata (dimensions, format, provider request id, usage/tokens if available).
+2. **Image Editing (Single / Multi‑Input)**
+   - Inputs: primary image (required), secondary images (0..N), optional mask(s), instruction prompt, `InputFidelity` (Default/High).
+   - Rule: primary image fidelity is preserved more strongly, per provider guidance.
+   - Support multiple masks (serialized to provider shape) or a combined mask layer.
+3. **Variations**
+   - Inputs: base image + prompt nudges; outputs several candidates (N) with per‑image metadata.
+4. **Compositing Helpers (Optional, Local)**
+   - Utility helpers built on **SixLabors.ImageSharp** (optional package dependency) for pre‑ or post‑processing: resize, pad, alpha‑matting, overlay, simple grid combines.
+   - Helpers live in a secondary package `ImageGen.Imaging` to keep core dependency light.
+5. **Resilience & Observability**
+   - **Retries** on transient faults (HTTP 408/429/5xx) with exponential backoff + jitter; honor `Retry-After`.
+   - **Timeouts**: per‑request and overall; configurable via options.
+   - **Idempotency**: caller can pass an `IdempotencyKey`.
+   - **Tracing**: OpenTelemetry spans for serialization, HTTP call, and decode; tags for model, fidelity, size.
+   - **Metrics**: success rate, latency histogram, bytes transferred, retry count.
+6. **Security**
+   - API key injected via configuration providers; never written to logs; redaction in exception messages.
+   - Optional customer‑managed proxy/base URL.
+7. **Developer Experience**
+   - DI‑friendly `IImageGenClient` with `AddImageGenClient(...)` extension for `IServiceCollection`.
+   - Async‑first API surface; limited sync wrappers (if any).
+   - Rich XML docs & samples; analyzers for misuse (e.g., large inline byte arrays in logs).
+
+------
+
+## 5) Non‑Functional Requirements
+
+- **Performance**: Target p95 end‑to‑end client latency overhead < 15ms over raw `HttpClient` (excluding provider time).
+- **Memory**: Stream to disk/stream when requested to avoid loading large images fully in memory.
+- **Compatibility**: Windows/Linux/macOS; Cloud Functions; ASP.NET minimal APIs.
+- **Accessibility**: Example code includes alt‑text guidelines for web delivery.
+- **Licensing**: MIT license; third‑party deps under compatible licenses.
+
+------
+
+## 6) API Design (Proposed)
+
+**Namespace:** `ImageGen`
+
+### 6.1 Options
+
+```csharp
+public sealed class ImageGenOptions
+{
+    public required string ApiKey { get; init; }
+    public Uri BaseUrl { get; init; } = new("https://api.provider.com/v1/");
+    public string Model { get; init; } = "gpt-image-1"; // default provider model
+    public TimeSpan RequestTimeout { get; init; } = TimeSpan.FromMinutes(2);
+    public int MaxRetries { get; init; } = 4;
+}
+```
+
+### 6.2 DTOs
+
+```csharp
+public enum InputFidelity { Default = 0, High = 1 }
+public enum ImageQuality { Standard = 0, High = 1 }
+public enum ImageFormat { Png, Jpeg, Webp }
+
+public sealed record GenerateRequest(
+    string Prompt,
+    int? Width = null,
+    int? Height = null,
+    ImageQuality Quality = ImageQuality.High,
+    bool TransparentBackground = false,
+    ImageFormat Format = ImageFormat.Png,
+    string? Seed = null,
+    IDictionary<string, string>? Extra = null);
+
+public sealed record EditRequest(
+    Stream PrimaryImage,
+    string Prompt,
+    IReadOnlyList<Stream>? SecondaryImages = null,
+    Stream? Mask = null,
+    InputFidelity InputFidelity = InputFidelity.High,
+    int? Width = null,
+    int? Height = null,
+    ImageQuality Quality = ImageQuality.High,
+    bool TransparentBackground = false,
+    ImageFormat Format = ImageFormat.Png,
+    IDictionary<string, string>? Extra = null);
+
+public sealed record ImageResult(
+    ReadOnlyMemory<byte> Bytes,
+    int Width,
+    int Height,
+    ImageFormat Format,
+    string ProviderRequestId,
+    long? InputTokens = null,
+    long? OutputTokens = null);
+```
+
+### 6.3 Client Interface
+
+```csharp
+public interface IImageGenClient
+{
+    Task<ImageResult> GenerateAsync(GenerateRequest req, CancellationToken ct = default);
+    Task<IReadOnlyList<ImageResult>> GenerateManyAsync(GenerateRequest req, int n = 1, CancellationToken ct = default);
+    Task<ImageResult> EditAsync(EditRequest req, CancellationToken ct = default);
+    Task<IReadOnlyList<ImageResult>> VariationsAsync(Stream baseImage, string? prompt = null, int n = 4, CancellationToken ct = default);
+}
+```
+
+### 6.4 Dependency Injection
+
+```csharp
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddImageGenClient(this IServiceCollection services, Action<ImageGenOptions> configure)
+    {
+        services.Configure(configure);
+        services.AddHttpClient<IImageGenClient, ImageGenClient>()
+            .SetHandlerLifetime(TimeSpan.FromMinutes(5));
+        // Add Polly policies (retry, circuit breaker) here.
+        return services;
+    }
+}
+```
+
+### 6.5 Example Usage
+
+```csharp
+builder.Services.AddImageGenClient(opt =>
+{
+    opt.ApiKey = builder.Configuration["IMAGE_API_KEY"]!;
+    opt.Model = "gpt-image-1";
+});
+
+// In an endpoint or service:
+var result = await _images.EditAsync(new EditRequest(
+    PrimaryImage: uploadedFile.OpenReadStream(),
+    Prompt: "Remove the bottle, keep the brand logo intact, white background",
+    InputFidelity: InputFidelity.High,
+    Width: 2048, Height: 2048,
+    TransparentBackground: true
+));
+
+return Results.File(result.Bytes.ToArray(), contentType: "image/png");
+```
+
+------
+
+## 7) Architecture & Data Flow
+
+1. **Caller** constructs `GenerateRequest` or `EditRequest`.
+2. `ImageGenClient` serializes request → builds multipart/form-data for images/masks.
+3. Sends HTTP to provider endpoint with `Authorization: Bearer <key>`.
+4. Applies Polly policies (retry/backoff) on transient failures; respects `Retry-After`.
+5. Receives response stream; decodes bytes; parses metadata/usage if provided.
+6. Returns `ImageResult` to caller; logs trace/metrics; redacts secrets.
+
+> **Provider Abstraction:** Adapter interface `IImageGenProvider` to map our DTOs to specific providers. Default `OpenAIImageProvider` ships in-core; others can be added via separate packages.
+
+------
+
+## 8) Error Handling & Edge Cases
+
+- **429 Too Many Requests**: retry with exponential backoff; obey provider hints; surface `RateLimitExceededException` if exhausted.
+- **Large Files**: stream upload; configurable in‑memory limit; throw `ImageTooLargeException` with guidance.
+- **Invalid Masks**: validate mask dimensions vs primary image; auto‑resize option.
+- **Non‑square sizes**: allow WxH with provider constraints; document clamping/rounding behavior.
+- **Timeouts**: cancel with `OperationCanceledException`; emit structured log fields (route, model, size).
+- **Content Safety**: surface provider error messages without reproducing disallowed content.
+
+------
+
+## 9) Observability
+
+- **Logging**: Request id, route, size WxH, model, fidelity, duration, retry count. Never log image bytes or API key.
+- **Metrics**: counters (requests, errors), histograms (latency, size), gauges (in‑flight).
+- **Tracing**: spans: `serialize`, `http_send`, `http_receive`, `decode`; attributes: `image.model`, `image.fidelity`, `image.size`, `image.format`.
+
+------
+
+## 10) Compliance, Privacy & Security
+
+- Secrets via standard configuration providers (KeyVault/Parameter Store).
+- PII handling: do not persist images; provide explicit opt‑in disk caching interface.
+- Redaction middleware for logs; structured logging with sensitive fields masked.
+- License and third‑party notices included in package.
+
+------
+
+## 11) Packaging & Distribution
+
+- **NuGet**: `ImageGen` (core), `ImageGen.Imaging` (optional helpers).
+- **Versioning**: SemVer; `1.0.0` GA after beta feedback.
+- **Artifacts**: symbols package, XML docs, source link.
+- **Docs**: README, quickstarts, API reference (DocFX), samples (Minimal API, Worker).
+- **CI/CD**: GitHub Actions (build, test, publish on tag); signed packages.
+
+------
+
+## 12) Testing Strategy
+
+- **Unit**: DTO validation, request builders, mask/size logic, retry policy behavior (Polly `PolicyWrap`).
+- **Contract/Integration**: hit provider sandbox with small images; record request/response (redacted).
+- **Golden Image Checks**: perceptual hash (pHash) similarity thresholds for regression (non-deterministic friendly).
+- **Load**: concurrency + backoff; ensure no socket exhaustion (reuse `SocketsHttpHandler`).
+
+------
+
+## 13) Risks & Mitigations
+
+- **Provider changes / model deprecations** → abstraction layer + compatibility shims; feature flags for options.
+- **Cost overruns with High fidelity** → expose `budget`/`usage` callbacks; docs on when to use `InputFidelity.High`.
+- **Binary bloat (ImageSharp)** → move imaging helpers to optional package.
+- **Latency spikes** → timeouts + circuit breakers; expose async streaming APIs when provider supports it.
+
+------
+
+## 14) Timeline (indicative)
+
+- Week 1–2: API design, scaffolding, provider adapter, basic generate/edit.
+- Week 3: Resilience, telemetry, masks & multi‑input, docs.
+- Week 4: Tests (unit + integration), samples, beta package.
+- Week 5: Feedback, polish, 1.0.0 release.
+
+------
+
+## 15) Open Questions
+
+- Should we include **prompt templates** and interpolation helpers in core or a separate `ImageGen.Prompts` package?
+- Do we want built‑in **content filtering** hooks (pre-flight checks) or leave this to the caller?
+- What default **size presets** should we ship (e.g., 1024, 1536, 2048)?
+
+------
+
+## 16) Appendix A — Minimal Provider Mapping (OpenAI example)
+
+- Model name: `gpt-image-1` (configurable).
+- Params mapping: `InputFidelity.High` → `input_fidelity = "high"`; `ImageQuality.High` → `quality = "high"`; transparent background → `background = "transparent"`; format mapping to `png/jpeg/webp`.
+
+------
+
+## 17) Appendix B — Sample Minimal Implementation Sketch
+
+```csharp
+internal sealed class ImageGenClient(HttpClient http, IOptions<ImageGenOptions> opt, ILogger<ImageGenClient> log) : IImageGenClient
+{
+    private readonly ImageGenOptions _opt = opt.Value;
+
+    public async Task<ImageResult> GenerateAsync(GenerateRequest req, CancellationToken ct)
+    {
+        using var form = new MultipartFormDataContent();
+        form.Add(new StringContent(_opt.Model), "model");
+        form.Add(new StringContent(req.Prompt), "prompt");
+        if (req.Width is { } w) form.Add(new StringContent(w.ToString()), "width");
+        if (req.Height is { } h) form.Add(new StringContent(h.ToString()), "height");
+        // map quality/format/background ...
+
+        using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(_opt.BaseUrl, "images/generations"));
+        msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _opt.ApiKey);
+        msg.Content = form;
+
+        using var res = await http.SendAsync(msg, HttpCompletionOption.ResponseHeadersRead, ct);
+        res.EnsureSuccessStatusCode();
+        var bytes = await res.Content.ReadAsByteArrayAsync(ct);
+        // parse metadata from headers/body if provided
+        return new ImageResult(bytes, 0, 0, ImageFormat.Png, res.Headers.TryGetValues("x-request-id", out var v) ? v.FirstOrDefault() ?? string.Empty : string.Empty);
+    }
+
+    public Task<IReadOnlyList<ImageResult>> GenerateManyAsync(GenerateRequest req, int n, CancellationToken ct)
+        => throw new NotImplementedException();
+
+    public Task<ImageResult> EditAsync(EditRequest req, CancellationToken ct)
+        => throw new NotImplementedException();
+
+    public Task<IReadOnlyList<ImageResult>> VariationsAsync(Stream baseImage, string? prompt, int n, CancellationToken ct)
+        => throw new NotImplementedException();
+}
+```
+
+> Note: Real implementation will include full mapping, streaming, retries, and robust error parsing.
