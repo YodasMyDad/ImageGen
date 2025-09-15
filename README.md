@@ -4,6 +4,11 @@
 
 Transform images with OpenAI's GPT-Image-1 model. Generate, edit, and enhance images using simple C# code. Perfect for web apps, APIs, and automation tools.
 
+[![NuGet](https://img.shields.io/nuget/v/ImageGen.svg)](https://www.nuget.org/packages/ImageGen/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/)
+
+
 ## ✨ Cool Things You Can Do
 
 - **Remove backgrounds** from product photos instantly
@@ -19,7 +24,7 @@ Transform images with OpenAI's GPT-Image-1 model. Generate, edit, and enhance im
 ### 1. Install the Package
 
 ```bash
-dotnet add package ImageGen --version 1.0.0-beta.1
+dotnet add package ImageGen
 ```
 
 ### 2. Configure Your App
