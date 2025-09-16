@@ -1,56 +1,46 @@
 namespace ImageGen.Models;
 
 /// <summary>
-/// Request parameters for generating an image from a text prompt.
+/// Parameters for generating a new image from text.
 /// </summary>
 public sealed record GenerateRequest(
     /// <summary>
-    /// The text prompt describing the image to generate.
-    /// Should be descriptive and specific for best results.
+    /// Text description of the image you want to generate.
+    /// Be specific and descriptive for best results.
     /// </summary>
     string Prompt,
 
     /// <summary>
-    /// The desired width of the generated image in pixels.
-    /// If not specified, uses the model's default dimensions.
-    /// Common values: 1024, 1536, 2048 (square).
+    /// Image width in pixels (optional).
     /// </summary>
     int? Width = null,
 
     /// <summary>
-    /// The desired height of the generated image in pixels.
-    /// If not specified, uses the model's default dimensions.
-    /// Common values: 1024, 1536, 2048 (square).
+    /// Image height in pixels (optional).
     /// </summary>
     int? Height = null,
 
     /// <summary>
-    /// The quality level for the generated image.
-    /// Defaults to High quality for better results.
+    /// Image quality level.
     /// </summary>
     ImageQuality Quality = ImageQuality.High,
 
     /// <summary>
-    /// Whether to generate an image with a transparent background.
-    /// Only supported by certain formats (PNG, WebP).
-    /// Defaults to false (opaque background).
+    /// Whether to make the background transparent.
     /// </summary>
     bool TransparentBackground = false,
 
     /// <summary>
-    /// The output format for the generated image.
-    /// Defaults to JPEG for smaller file sizes and better web compatibility.
+    /// Output image format.
     /// </summary>
     ImageFormat Format = ImageFormat.Jpeg,
 
     /// <summary>
-    /// An optional seed for reproducible generation.
-    /// If provided, the same seed should produce similar results.
+    /// Optional seed for reproducible results.
     /// </summary>
     string? Seed = null,
 
     /// <summary>
-    /// Additional provider-specific parameters.
-    /// Can be used to pass extra options not covered by the standard properties.
+    /// Extra parameters if needed.
     /// </summary>
     IDictionary<string, string>? Extra = null);

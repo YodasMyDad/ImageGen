@@ -44,7 +44,36 @@ builder.Services.AddImageGenClient(options =>
 var app = builder.Build();
 ```
 
-### 3. Use It!
+### 3. Quick Stream Examples
+
+**From a file on disk:**
+```csharp
+using var fileStream = new FileStream("path/to/image.jpg", FileMode.Open);
+```
+
+**From an uploaded file (ASP.NET Core):**
+```csharp
+// In your controller or page handler
+public async Task<IActionResult> UploadImage(IFormFile uploadedFile)
+{
+    using var stream = uploadedFile.OpenReadStream();
+    // Now use the stream with ImageGen
+}
+```
+
+**From a URL:**
+```csharp
+using var httpClient = new HttpClient();
+using var stream = await httpClient.GetStreamAsync("https://example.com/image.jpg");
+```
+
+**From a byte array:**
+```csharp
+var imageBytes = File.ReadAllBytes("path/to/image.jpg");
+using var stream = new MemoryStream(imageBytes);
+```
+
+### 4. Use It!
 
 ```csharp
 using ImageGen.Core;
@@ -151,16 +180,15 @@ builder.Services.AddImageGenClient(options =>
     // Required: Your OpenAI API key
     options.ApiKey = builder.Configuration["OPENAI_API_KEY"]!;
 
-    // Optional settings (model defaults to "gpt-image-1")
+    // Optional: Timeout for API calls (default: 3 minutes)
     options.RequestTimeout = TimeSpan.FromMinutes(3);
-    options.MaxRetries = 3; // Auto-retry failed requests
 });
 ```
 
 **Add to appsettings.json:**
 ```json
 {
-  "OpenAI": {
+  "ImageGen": {
     "ApiKey": "sk-your-api-key-here"
   }
 }
@@ -169,11 +197,10 @@ builder.Services.AddImageGenClient(options =>
 ## 🎯 Key Features
 
 - **High-Fidelity Editing**: `InputFidelity.High` preserves faces, logos, and details
-- **Smart Retries**: Automatic retry with exponential backoff
+- **Simple & Clean**: Easy-to-understand API designed for developers
 - **Async First**: Built for modern .NET with async/await
 - **Type Safe**: Strong typing prevents runtime errors
-- **Observable**: Built-in logging and tracing
-- **Testable**: Easy to mock and test
+- **Production Ready**: Handles errors gracefully and logs important events
 
 ## 🛠️ API Overview
 
@@ -190,21 +217,21 @@ builder.Services.AddImageGenClient(options =>
 
 ## 🖥️ Try the Demo
 
-Want to see it in action? Check out the **interactive web demo**:
+Want to see it in action? Check out the **simple web demo**:
 
 ```bash
 cd ImageGen.Web
 dotnet run
 ```
 
-Visit `http://localhost:5243` to try:
-- Remove backgrounds
-- Change backgrounds
-- Add logos
-- Enhance products
-- Generate variations
+Visit `http://localhost:5001` to try:
+- **Remove backgrounds** - Upload an image and make the background transparent or white
+- **Add logos** - Place logos on images with perfect positioning
+- **Change backgrounds** - Replace image backgrounds with new scenes
+- **Enhance products** - Improve product photos with better details
+- **Create variations** - Generate multiple creative versions
 
-All examples are interactive with drag-and-drop uploads!
+Each example shows you the exact AI prompt being used, so you can learn and adapt them for your own projects!
 
 ## 📚 Learn More
 

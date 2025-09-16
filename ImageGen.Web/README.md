@@ -1,35 +1,35 @@
 # ImageGen Web Demo
 
-A comprehensive ASP.NET Core Razor Pages demo showcasing the ImageGen library's AI-powered image editing capabilities using OpenAI's GPT-Image-1 model.
+A simple ASP.NET Core Razor Pages demo showing how to use the ImageGen library for AI-powered image editing with OpenAI's GPT-Image-1 model. Perfect for learning and getting started!
 
-## Features
+## What You Can Try
 
-This demo includes 5 interactive examples:
+This demo includes 5 simple examples:
 
 ### 🧽 Remove Background
-- Automatically remove image backgrounds with high precision
-- Choose between transparent or white backgrounds
-- Perfect for product photography and isolated subjects
+- Upload an image and remove its background
+- Choose transparent or white background
+- Great for product photos or isolating subjects
 
 ### 🎨 Change Background
-- Replace product backgrounds with various environments
-- Options include studio, gradient, nature, urban, luxury, and minimalist settings
-- Transform product photos instantly
+- Replace backgrounds with new scenes
+- Perfect for product photography
+- See instant transformations
 
 ### 🏷️ Add Logo
-- Seamlessly integrate logos and watermarks into images
-- Control logo position and size
-- Professional branding and watermarking
+- Add logos to your images
+- Control position and size
+- Professional-looking results
 
 ### ✨ Enhance Product
-- Improve product photos with professional lighting and details
-- Various enhancement types: lighting, sharpness, studio quality, colors, textures
-- Complete professional retouching
+- Improve product photos automatically
+- Better lighting and details
+- Professional-quality enhancements
 
 ### 🔄 Create Variations
-- Generate multiple creative variations of product images
-- Different artistic styles: artistic, minimalist, vibrant, luxury, vintage, modern
-- Create 2-4 variations at once
+- Generate multiple versions of an image
+- Different creative styles
+- Explore artistic possibilities
 
 ## Getting Started
 
@@ -59,11 +59,10 @@ This demo includes 5 interactive examples:
 3. **Build and run**:
    ```bash
    cd ImageGen.Web
-   dotnet build
    dotnet run
    ```
 
-4. **Open your browser** to `https://localhost:5001` (or the URL shown in the console)
+4. **Open your browser** to `http://localhost:5001` (or the URL shown in the console)
 
 ## Project Structure
 
@@ -77,7 +76,7 @@ ImageGen.Web/
 │   ├── EnhanceProduct.cshtml/cs      # Product enhancement demo
 │   ├── ProductVariations.cshtml/cs   # Image variations demo
 │   └── Shared/
-│       └── _Layout.cshtml            # Bootstrap 5 layout
+│       └── _Layout.cshtml            # Simple Bootstrap layout
 ├── wwwroot/
 │   ├── images/                       # Uploaded and processed images
 │   └── ...
@@ -89,31 +88,43 @@ ImageGen.Web/
 ## Technology Stack
 
 - **ASP.NET Core 9.0** - Web framework
-- **Razor Pages** - Page-focused web development
-- **Bootstrap 5.3** - Responsive UI framework
+- **Razor Pages** - Simple page-focused development
+- **Bootstrap 5.3** - Clean, responsive UI
 - **ImageGen Library** - AI-powered image processing
-- **OpenAI GPT-Image-1** - High-fidelity image generation and editing
+- **OpenAI GPT-Image-1** - High-quality image generation and editing
 
 ## How It Works
 
-Each demo page follows this pattern:
+Each demo page follows this simple pattern:
 
-1. **Upload**: Drag & drop or select image files
-2. **Configure**: Choose processing options (style, position, size, etc.)
-3. **Process**: Click to send to OpenAI's API for AI processing
-4. **Download**: Save the processed results
+1. **Upload**: Select image files using the file picker
+2. **Configure**: Choose your options (like position, size, background type)
+3. **Process**: Click the button to send to OpenAI's AI for processing
+4. **See Results**: View the processed image and download it
 
-Images are temporarily stored in `wwwroot/images/` for processing and display.
+**Best part**: Each example shows you the exact AI prompt being used, so you can learn and create your own variations!
+
+Images are temporarily stored in `wwwroot/images/` for processing.
 
 ## API Usage
 
 The demo uses the ImageGen library which provides:
 
 - **High-fidelity image editing** with `InputFidelity.High`
-- **Multiple image composition** for logo addition
+- **Simple image composition** for adding logos and overlays
 - **Image variations** for creative exploration
-- **Robust error handling** and retry logic
-- **OpenTelemetry observability**
+- **Clean error handling** with helpful messages
+- **Easy-to-follow code examples** you can copy and modify
+
+## Perfect for Learning
+
+Each demo page shows you:
+- **The exact AI prompt** being sent to OpenAI
+- **Simple form inputs** you can easily replicate
+- **Clear code examples** in C# that you can copy
+- **Step-by-step process** that's easy to understand
+
+**New to AI image editing?** This demo is perfect for you! See exactly how the prompts work and adapt them for your own projects.
 
 ## Security Notes
 

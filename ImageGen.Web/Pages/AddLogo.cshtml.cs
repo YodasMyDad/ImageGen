@@ -5,17 +5,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ImageGen.Web.Pages;
 
-public class AddLogoModel : PageModel
+/// <summary>
+/// Simple demo page for adding logos to images using AI.
+/// </summary>
+public class AddLogoModel(IImageGenClient imageClient, IWebHostEnvironment environment) : PageModel
 {
-    private readonly IImageGenClient _imageClient;
-    private readonly IWebHostEnvironment _environment;
-
-    public AddLogoModel(IImageGenClient imageClient, IWebHostEnvironment environment)
-    {
-        _imageClient = imageClient;
-        _environment = environment;
-    }
-
     [BindProperty]
     public IFormFile? MainImage { get; set; }
 
@@ -23,10 +17,10 @@ public class AddLogoModel : PageModel
     public IFormFile? LogoImage { get; set; }
 
     [BindProperty]
-    public string? Position { get; set; }
+    public string? Position { get; set; } = "bottom-right";
 
     [BindProperty]
-    public string? Size { get; set; }
+    public string? Size { get; set; } = "medium";
 
     [BindProperty]
     public string? MainImageUrl { get; set; }
@@ -34,130 +28,108 @@ public class AddLogoModel : PageModel
     [BindProperty]
     public string? LogoImageUrl { get; set; }
 
-    [BindProperty]
-    public string? ProcessedImageUrl { get; set; }
-
+    public string? ResultImageUrl { get; set; }
+    public string? CurrentPrompt { get; set; }
     public string? ErrorMessage { get; set; }
 
-    private string ImagesPath => Path.Combine(_environment.WebRootPath, "images");
+    private string ImagesPath => Path.Combine(environment.WebRootPath, "images");
 
-    private static readonly Dictionary<string, string> PositionPrompts = new()
-    {
-        ["bottom-right"] = "Add the logo in the bottom right corner with appropriate spacing from the edges",
-        ["bottom-left"] = "Add the logo in the bottom left corner with appropriate spacing from the edges",
-        ["top-right"] = "Add the logo in the top right corner with appropriate spacing from the edges",
-        ["top-left"] = "Add the logo in the top left corner with appropriate spacing from the edges",
-        ["center"] = "Add the logo in the center of the image with subtle transparency"
-    };
-
-    private static readonly Dictionary<string, string> SizePrompts = new()
-    {
-        ["small"] = "Make the logo small (about 10% of the image width)",
-        ["medium"] = "Make the logo medium-sized (about 15% of the image width)",
-        ["large"] = "Make the logo large (about 20% of the image width)",
-        ["xlarge"] = "Make the logo extra large (about 25% of the image width)"
-    };
-
+    /// <summary>
+    /// Handle image upload and show preview.
+    /// </summary>
     public async Task<IActionResult> OnPostUploadAsync()
     {
-        if (MainImage == null || MainImage.Length == 0)
+        if (MainImage == null || LogoImage == null)
         {
-            ErrorMessage = "Please select a main image file.";
+            ErrorMessage = "Please select both images.";
             return Page();
         }
 
-        if (LogoImage == null || LogoImage.Length == 0)
-        {
-            ErrorMessage = "Please select a logo image file.";
-            return Page();
-        }
-
-        // Validate file types
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        var mainExtension = Path.GetExtension(MainImage.FileName).ToLowerInvariant();
-        var logoExtension = Path.GetExtension(LogoImage.FileName).ToLowerInvariant();
-
-        if (!allowedExtensions.Contains(mainExtension) || !allowedExtensions.Contains(logoExtension))
-        {
-            ErrorMessage = "Only image files (.jpg, .png, .webp) are allowed.";
-            return Page();
-        }
-
-        // Ensure images directory exists
+        // Save uploaded images
         Directory.CreateDirectory(ImagesPath);
 
-        // Save main image
-        var mainFileName = $"main_{Guid.NewGuid()}{mainExtension}";
-        var mainFilePath = Path.Combine(ImagesPath, mainFileName);
-        using (var stream = new FileStream(mainFilePath, FileMode.Create))
-        {
-            await MainImage.CopyToAsync(stream);
-        }
+        var mainFileName = $"main_{Guid.NewGuid()}{Path.GetExtension(MainImage.FileName)}";
+        var logoFileName = $"logo_{Guid.NewGuid()}{Path.GetExtension(LogoImage.FileName)}";
 
-        // Save logo image
-        var logoFileName = $"logo_{Guid.NewGuid()}{logoExtension}";
-        var logoFilePath = Path.Combine(ImagesPath, logoFileName);
-        using (var stream = new FileStream(logoFilePath, FileMode.Create))
-        {
+        var mainPath = Path.Combine(ImagesPath, mainFileName);
+        var logoPath = Path.Combine(ImagesPath, logoFileName);
+
+        await using (var stream = new FileStream(mainPath, FileMode.Create))
+            await MainImage.CopyToAsync(stream);
+
+        await using (var stream = new FileStream(logoPath, FileMode.Create))
             await LogoImage.CopyToAsync(stream);
-        }
 
         MainImageUrl = $"/images/{mainFileName}";
         LogoImageUrl = $"/images/{logoFileName}";
-        Position ??= "bottom-right";
-        Size ??= "medium";
 
         return Page();
     }
 
+    /// <summary>
+    /// Process images with AI to add logo.
+    /// </summary>
     public async Task<IActionResult> OnPostProcessAsync()
     {
         if (string.IsNullOrEmpty(MainImageUrl) || string.IsNullOrEmpty(LogoImageUrl))
         {
-            ErrorMessage = "Images not uploaded.";
+            ErrorMessage = "Please upload images first.";
             return Page();
         }
 
         try
         {
-            // Open both image streams
-            var mainImagePath = Path.Combine(_environment.WebRootPath, MainImageUrl.TrimStart('/'));
-            var logoImagePath = Path.Combine(_environment.WebRootPath, LogoImageUrl.TrimStart('/'));
+            // Build the prompt for the AI
+            var positionText = Position switch
+            {
+                "bottom-right" => "bottom right corner",
+                "bottom-left" => "bottom left corner",
+                "top-right" => "top right corner",
+                "top-left" => "top left corner",
+                "center" => "center",
+                _ => "bottom right corner"
+            };
 
-            using var mainImageStream = new FileStream(mainImagePath, FileMode.Open, FileAccess.Read);
-            using var logoImageStream = new FileStream(logoImagePath, FileMode.Open, FileAccess.Read);
+            var sizeText = Size switch
+            {
+                "small" => "small (10% of image width)",
+                "medium" => "medium (15% of image width)",
+                "large" => "large (20% of image width)",
+                "xlarge" => "extra large (25% of image width)",
+                _ => "medium (15% of image width)"
+            };
 
-            var position = Position ?? "bottom-right";
-            var size = Size ?? "medium";
+            CurrentPrompt = $"Add a logo to the {positionText} of the image. Make the logo {sizeText}. Blend it naturally and ensure it looks professional.";
 
-            var positionPrompt = PositionPrompts.GetValueOrDefault(position, "Add the logo in the bottom right corner");
-            var sizePrompt = SizePrompts.GetValueOrDefault(size, "Make the logo medium-sized");
+            // Process with AI
+            var mainPath = Path.Combine(environment.WebRootPath, MainImageUrl.TrimStart('/'));
+            var logoPath = Path.Combine(environment.WebRootPath, LogoImageUrl.TrimStart('/'));
 
-            var prompt = $"{positionPrompt}. {sizePrompt}. Blend the logo naturally with the main image, ensuring proper transparency and positioning. The logo should look professional and integrated.";
+            using var mainStream = new FileStream(mainPath, FileMode.Open);
+            using var logoStream = new FileStream(logoPath, FileMode.Open);
 
-            var editRequest = new EditRequest(
-                PrimaryImage: mainImageStream,
-                SecondaryImages: new[] { logoImageStream },
-                Prompt: prompt,
-                InputFidelity: InputFidelity.High,
+            var request = new EditRequest(
+                PrimaryImage: mainStream,
+                SecondaryImages: [logoStream],
+                Prompt: CurrentPrompt,
                 Quality: ImageQuality.High,
                 Format: ImageFormat.Png
             );
 
-            var result = await _imageClient.EditAsync(editRequest);
+            var result = await imageClient.EditAsync(request);
 
-            // Save processed image
-            var processedFileName = $"processed_{Guid.NewGuid()}.{result.Format.ToString().ToLower()}";
-            var processedPath = Path.Combine(ImagesPath, processedFileName);
+            // Save result
+            var resultFileName = $"result_{Guid.NewGuid()}.png";
+            var resultPath = Path.Combine(ImagesPath, resultFileName);
 
-            await using var fileStream = new FileStream(processedPath, FileMode.Create);
+            await using var fileStream = new FileStream(resultPath, FileMode.Create);
             await fileStream.WriteAsync(result.Bytes.ToArray());
 
-            ProcessedImageUrl = $"/images/{processedFileName}";
+            ResultImageUrl = $"/images/{resultFileName}";
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Error processing images: {ex.Message}";
+            ErrorMessage = $"Error: {ex.Message}";
         }
 
         return Page();

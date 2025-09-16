@@ -1,59 +1,57 @@
 using ImageGen.Configuration;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.FileProviders;
 
+// Create web application builder
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add Razor Pages for the web UI
 builder.Services.AddRazorPages();
 
-// Configure ImageGen client
+// Configure ImageGen client - this is the main service for AI image operations
 builder.Services.AddImageGenClient(options =>
 {
+    // Get OpenAI API key from configuration
     var apiKey = builder.Configuration["ImageGen:ApiKey"] ??
         throw new InvalidOperationException("ImageGen API key not found in configuration");
 
+    // Validate the API key is configured
     if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "your-openai-api-key-here")
     {
-        throw new InvalidOperationException("ImageGen API key is not configured. Please set a valid OpenAI API key in appsettings.json or appsettings.development.json");
+        throw new InvalidOperationException("Please set a valid OpenAI API key in appsettings.json");
     }
 
     options.ApiKey = apiKey;
-    options.RequestTimeout = TimeSpan.FromMinutes(3);
+    options.RequestTimeout = TimeSpan.FromMinutes(3); // Allow time for AI processing
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
-// Configure static files to serve dynamically generated images
+// Serve static files (including generated images)
 app.UseStaticFiles();
 
-// Enable directory browsing for images folder (optional, for debugging)
+// In development, enable browsing of generated images
 if (app.Environment.IsDevelopment())
 {
     app.UseDirectoryBrowser(new DirectoryBrowserOptions
     {
-        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
-            Path.Combine(app.Environment.WebRootPath, "images")),
+        FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.WebRootPath, "images")),
         RequestPath = "/images"
     });
 }
 
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages().WithStaticAssets();
 
 app.Run();

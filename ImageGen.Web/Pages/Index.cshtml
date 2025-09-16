@@ -4,137 +4,81 @@
     ViewData["Title"] = "ImageGen AI Demo";
 }
 
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">AI-Powered Image Editing</h1>
-                <p class="lead mb-4">
-                    Experience the power of OpenAI's GPT-Image-1 model with high-fidelity image editing,
-                    background removal, logo placement, and creative transformations.
-                </p>
-                <p class="mb-4">
-                    Upload your images and see instant AI-powered modifications using the ImageGen library.
-                </p>
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">AI Image Editing Demo</h1>
+        <p class="lead text-muted">
+            Simple examples using OpenAI's GPT-Image-1 model for image generation and editing.
+        </p>
+        <div class="alert alert-info mt-3">
+            <strong>Note:</strong> Make sure your OpenAI API key is configured in appsettings.json
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-eraser display-4 text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Remove Background</h5>
+                    <p class="card-text">Remove image backgrounds automatically</p>
+                    <a asp-page="/RemoveBackground" class="btn btn-primary">Try It</a>
+                </div>
             </div>
-            <div class="col-lg-6">
-                <div class="text-center">
-                    <i class="bi bi-image display-1 text-white-50"></i>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-badge-tm display-4 text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Add Logo</h5>
+                    <p class="card-text">Add logos to images with AI blending</p>
+                    <a asp-page="/AddLogo" class="btn btn-warning">Try It</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-palette display-4 text-success"></i>
+                    </div>
+                    <h5 class="card-title">Change Background</h5>
+                    <p class="card-text">Replace image backgrounds</p>
+                    <a asp-page="/ChangeBackground" class="btn btn-success">Try It</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-stars display-4 text-info"></i>
+                    </div>
+                    <h5 class="card-title">Enhance Product</h5>
+                    <p class="card-text">Improve product photos</p>
+                    <a asp-page="/EnhanceProduct" class="btn btn-info">Try It</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-shuffle display-4 text-danger"></i>
+                    </div>
+                    <h5 class="card-title">Create Variations</h5>
+                    <p class="card-text">Generate image variations</p>
+                    <a asp-page="/ProductVariations" class="btn btn-danger">Try It</a>
                 </div>
             </div>
         </div>
     </div>
-</section>
-
-<section id="examples" class="py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center mb-5">
-                <h2 class="display-5 fw-bold">Interactive Examples</h2>
-                <p class="lead text-muted">Try these common image editing scenarios powered by AI</p>
-            </div>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-lg-4 col-md-6">
-                <div class="card example-card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="bi bi-eraser display-4 text-primary"></i>
-                        </div>
-                        <h5 class="card-title">Remove Background</h5>
-                        <p class="card-text">
-                            Automatically remove image backgrounds with high precision,
-                            keeping subjects intact for transparent or white backgrounds.
-                        </p>
-                        <a asp-page="/RemoveBackground" class="btn btn-primary">
-                            Try It <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card example-card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="bi bi-palette display-4 text-success"></i>
-                        </div>
-                        <h5 class="card-title">Change Background</h5>
-                        <p class="card-text">
-                            Replace product backgrounds with custom scenes,
-                            studio setups, or creative environments.
-                        </p>
-                        <a asp-page="/ChangeBackground" class="btn btn-success">
-                            Try It <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card example-card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="bi bi-badge-tm display-4 text-warning"></i>
-                        </div>
-                        <h5 class="card-title">Add Logo</h5>
-                        <p class="card-text">
-                            Seamlessly integrate logos, watermarks, or branding elements
-                            into your images with perfect positioning.
-                        </p>
-                        <a asp-page="/AddLogo" class="btn btn-warning">
-                            Try It <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card example-card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="bi bi-stars display-4 text-info"></i>
-                        </div>
-                        <h5 class="card-title">Enhance Product</h5>
-                        <p class="card-text">
-                            Improve product photos with better lighting,
-                            enhanced details, and professional retouching.
-                        </p>
-                        <a asp-page="/EnhanceProduct" class="btn btn-info">
-                            Try It <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="card example-card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <i class="bi bi-shuffle display-4 text-danger"></i>
-                        </div>
-                        <h5 class="card-title">Create Variations</h5>
-                        <p class="card-text">
-                            Generate multiple creative variations of your images
-                            with different styles and artistic interpretations.
-                        </p>
-                        <a asp-page="/ProductVariations" class="btn btn-danger">
-                            Try It <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-5">
-            <div class="col-12 text-center">
-                <div class="alert alert-info" role="alert">
-                    <i class="bi bi-info-circle"></i>
-                    <strong>Note:</strong> These examples use OpenAI's GPT-Image-1 model.
-                    Make sure your API key is configured in <code>appsettings.json</code>.
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+</div>

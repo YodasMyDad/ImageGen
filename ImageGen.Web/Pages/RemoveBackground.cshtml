@@ -4,220 +4,89 @@
     ViewData["Title"] = "Remove Background";
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Remove Background</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
+<div class="container mt-4">
+    <h1>Remove Background</h1>
+    <p class="text-muted">Use AI to remove image backgrounds automatically.</p>
 
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold">
-                    <i class="bi bi-eraser text-primary"></i> Remove Background
-                </h1>
-                <p class="lead text-muted">
-                    Automatically remove image backgrounds with high precision using AI.
-                    Perfect for product photos, portraits, and isolated subjects.
-                </p>
-            </div>
-        </div>
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
 
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-upload"></i> Upload Image
-                        </h5>
+    @if (string.IsNullOrEmpty(Model.OriginalImageUrl))
+    {
+        <!-- Upload Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Step 1: Upload Image</h5>
+                <form method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Select Image</label>
+                        <input type="file" name="imageFile" accept="image/*" class="form-control" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Background Type</label>
+                        <select name="backgroundType" class="form-select">
+                            <option value="transparent" selected>Transparent</option>
+                            <option value="white">White</option>
+                        </select>
+                    </div>
+                    <button type="submit" asp-page-handler="Upload" class="btn btn-primary">Upload Image</button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Preview and Process -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
                     <div class="card-body">
-                        <form method="post" enctype="multipart/form-data" id="uploadForm">
-                            <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
-                            <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
+                        <h5>Original Image</h5>
+                        <img src="@Model.OriginalImageUrl" class="img-fluid" style="max-height: 300px;">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Step 2: Process</h5>
+                        <form method="post">
+                            <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl">
+                            <input type="hidden" name="backgroundType" value="@Model.BackgroundType">
 
-                            <div class="upload-zone mb-3" id="uploadZone">
-                                <div id="uploadZoneContent">
-                                    <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
-                                    <h5>Drag & drop an image here</h5>
-                                    <p class="text-muted">or click to browse files</p>
-                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('imageFile').click()">
-                                        <i class="bi bi-folder"></i> Choose File
-                                    </button>
-                                </div>
-                                <input type="file" name="imageFile" id="imageFile" accept="image/*" class="d-none" required>
-                            </div>
+                            <p>Background type: <strong>@(Model.BackgroundType == "transparent" ? "Transparent" : "White")</strong></p>
 
-                            <div class="mb-3">
-                                <label for="backgroundType" class="form-label">Background Type</label>
-                                <select class="form-select" id="backgroundType" name="backgroundType">
-                                    <option value="transparent">Transparent</option>
-                                    <option value="white">White</option>
-                                </select>
-                            </div>
-
-                            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-                            {
-                                <div class="alert alert-danger">
-                                    <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
-                                </div>
-                            }
-
-                            @if (Model.OriginalImageUrl != null)
-                            {
-                                <div class="alert alert-success">
-                                    <i class="bi bi-check-circle"></i> Image uploaded successfully! Click "Remove Background" to process.
-                                </div>
-                            }
-
-                            <button type="submit" class="btn btn-primary w-100" asp-page-handler="Upload">
-                                <i class="bi bi-upload"></i> Upload Image
-                            </button>
+                            <button type="submit" asp-page-handler="Process" class="btn btn-success">Remove Background with AI</button>
                         </form>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-6">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-image"></i> Result
-                        </h5>
-                    </div>
-                    <div class="card-body text-center">
-                        @if (Model.OriginalImageUrl != null)
-                        {
-                            <div class="mb-4">
-                                <h6>Original Image</h6>
-                                <img src="@Model.OriginalImageUrl" alt="Original" class="image-preview mb-3" style="max-height: 200px;">
-                            </div>
-                        }
+        @if (!string.IsNullOrEmpty(Model.CurrentPrompt))
+        {
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>AI Prompt Used:</h6>
+                    <p class="text-muted">@Model.CurrentPrompt</p>
+                </div>
+            </div>
+        }
 
-                        @if (Model.ProcessedImageUrl != null)
-                        {
-                            <div class="mb-4">
-                                <h6>Background Removed</h6>
-                                <img src="@Model.ProcessedImageUrl" alt="Background Removed" class="image-preview mb-3" style="max-height: 300px;">
-                            </div>
-
-                            <div class="d-flex gap-2 justify-content-center">
-                                <a href="@Model.ProcessedImageUrl" class="btn btn-success" download>
-                                    <i class="bi bi-download"></i> Download
-                                </a>
-                                <button class="btn btn-outline-primary" onclick="location.reload()">
-                                    <i class="bi bi-arrow-clockwise"></i> Try Another
-                                </button>
-                            </div>
-                        }
-                        else if (Model.OriginalImageUrl != null)
-                        {
-                            <div class="text-center py-5">
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
-                                    <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
-                                    <input type="hidden" name="backgroundType" value="@Model.BackgroundType" />
-
-                                    <button type="submit" class="btn btn-primary" asp-page-handler="Process">
-                                        <i class="bi bi-magic"></i> Remove Background
-                                    </button>
-                                </form>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="text-center py-5 text-muted">
-                                <i class="bi bi-image display-4 mb-3"></i>
-                                <p>Upload an image to see the background removal result</p>
-                            </div>
-                        }
+        @if (!string.IsNullOrEmpty(Model.ResultImageUrl))
+        {
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <h5>Result</h5>
+                    <img src="@Model.ResultImageUrl" class="img-fluid mb-3" style="max-height: 400px;">
+                    <div>
+                        <a href="@Model.ResultImageUrl" class="btn btn-primary" download>Download Result</a>
+                        <a href="@Url.Page("RemoveBackground")" class="btn btn-secondary">Try Another</a>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-info-circle"></i> How it works
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p>
-                            This feature uses OpenAI's GPT-Image-1 model with high input fidelity to precisely identify
-                            and remove image backgrounds while preserving the main subject with exceptional detail.
-                        </p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Perfect for:</h6>
-                                <ul>
-                                    <li>Product photography</li>
-                                    <li>E-commerce images</li>
-                                    <li>Portrait editing</li>
-                                    <li>Logo extraction</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Supported formats:</h6>
-                                <ul>
-                                    <li>JPEG, PNG, WebP</li>
-                                    <li>Transparent or white backgrounds</li>
-                                    <li>High-resolution images</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-@section Scripts {
-    <script>
-        // Drag and drop functionality
-        const uploadZone = document.getElementById('uploadZone');
-        const uploadZoneContent = document.getElementById('uploadZoneContent');
-        const fileInput = document.getElementById('imageFile');
-
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
-
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                // Update content without destroying the file input
-                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                               <h5>File selected: ${files[0].name}</h5>
-                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
-            }
-        });
-
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                               <h5>File selected: ${file.name}</h5>
-                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
-            }
-        });
-    </script>
-}
+        }
+    }
+</div>

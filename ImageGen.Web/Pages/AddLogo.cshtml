@@ -1,80 +1,71 @@
 @page
 @model AddLogoModel
 @{
-    ViewData["Title"] = "Add Logo";
+    ViewData["Title"] = "Add Logo to Image";
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Add Logo</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
+<div class="container mt-4">
+    <h1>Add Logo to Image</h1>
+    <p class="text-muted">Use AI to add a logo to your image with natural blending.</p>
 
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold">
-                    <i class="bi bi-badge-tm text-warning"></i> Add Logo
-                </h1>
-                <p class="lead text-muted">
-                    Seamlessly integrate logos, watermarks, or branding elements into your images
-                    with perfect positioning and natural blending.
-                </p>
-            </div>
-        </div>
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
 
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="card shadow">
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-upload"></i> Upload Images
-                        </h5>
+    @if (string.IsNullOrEmpty(Model.MainImageUrl) || string.IsNullOrEmpty(Model.LogoImageUrl))
+    {
+        <!-- Upload Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Step 1: Upload Images</h5>
+                <form method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Main Image</label>
+                        <input type="file" name="mainImage" accept="image/*" class="form-control" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Logo Image</label>
+                        <input type="file" name="logoImage" accept="image/*" class="form-control" required>
+                    </div>
+                    <button type="submit" asp-page-handler="Upload" class="btn btn-primary">Upload Images</button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Preview and Process -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
                     <div class="card-body">
-                        <form method="post" enctype="multipart/form-data" id="uploadForm">
-                            <input type="hidden" name="mainImageUrl" value="@Model.MainImageUrl" />
-                            <input type="hidden" name="logoImageUrl" value="@Model.LogoImageUrl" />
-                            <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
-
-                            <div class="mb-3">
-                                <label for="mainImage" class="form-label">Main Image</label>
-                                <div class="upload-zone mb-2" id="mainUploadZone">
-                                    <div id="mainUploadZoneContent">
-                                        <i class="bi bi-image display-4 text-muted mb-2"></i>
-                                        <p class="mb-1">Drop main image here</p>
-                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="document.getElementById('mainImage').click()">
-                                            Browse
-                                        </button>
-                                    </div>
-                                    <input type="file" name="mainImage" id="mainImage" accept="image/*" class="d-none" required>
-                                </div>
+                        <h5>Uploaded Images</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <p><strong>Main Image:</strong></p>
+                                <img src="@Model.MainImageUrl" class="img-fluid" style="max-height: 200px;">
                             </div>
-
-                            <div class="mb-3">
-                                <label for="logoImage" class="form-label">Logo/Watermark</label>
-                                <div class="upload-zone mb-2" id="logoUploadZone">
-                                    <div id="logoUploadZoneContent">
-                                        <i class="bi bi-badge-tm display-4 text-muted mb-2"></i>
-                                        <p class="mb-1">Drop logo here</p>
-                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="document.getElementById('logoImage').click()">
-                                            Browse
-                                        </button>
-                                    </div>
-                                    <input type="file" name="logoImage" id="logoImage" accept="image/*" class="d-none" required>
-                                </div>
+                            <div class="col-6">
+                                <p><strong>Logo:</strong></p>
+                                <img src="@Model.LogoImageUrl" class="img-fluid" style="max-height: 200px;">
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Step 2: Configure Logo</h5>
+                        <form method="post">
+                            <input type="hidden" name="mainImageUrl" value="@Model.MainImageUrl">
+                            <input type="hidden" name="logoImageUrl" value="@Model.LogoImageUrl">
 
                             <div class="mb-3">
-                                <label for="position" class="form-label">Logo Position</label>
-                                <select class="form-select" id="position" name="position">
-                                    <option value="bottom-right">Bottom Right</option>
+                                <label class="form-label">Position</label>
+                                <select name="position" class="form-select">
+                                    <option value="bottom-right" selected>Bottom Right</option>
                                     <option value="bottom-left">Bottom Left</option>
                                     <option value="top-right">Top Right</option>
                                     <option value="top-left">Top Left</option>
@@ -83,184 +74,44 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="size" class="form-label">Logo Size</label>
-                                <select class="form-select" id="size" name="size">
-                                    <option value="small">Small (10% of image)</option>
-                                    <option value="medium">Medium (15% of image)</option>
-                                    <option value="large">Large (20% of image)</option>
-                                    <option value="xlarge">Extra Large (25% of image)</option>
+                                <label class="form-label">Size</label>
+                                <select name="size" class="form-select">
+                                    <option value="small">Small (10%)</option>
+                                    <option value="medium" selected>Medium (15%)</option>
+                                    <option value="large">Large (20%)</option>
+                                    <option value="xlarge">Extra Large (25%)</option>
                                 </select>
                             </div>
 
-                            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-                            {
-                                <div class="alert alert-danger">
-                                    <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
-                                </div>
-                            }
-
-                            @if (Model.MainImageUrl != null && Model.LogoImageUrl != null)
-                            {
-                                <div class="alert alert-success">
-                                    <i class="bi bi-check-circle"></i> Images uploaded successfully! Click "Add Logo" to process.
-                                </div>
-                            }
-
-                            <button type="submit" class="btn btn-warning w-100" asp-page-handler="Upload">
-                                <i class="bi bi-upload"></i> Upload Images
-                            </button>
+                            <button type="submit" asp-page-handler="Process" class="btn btn-success">Add Logo with AI</button>
                         </form>
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-6">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-image"></i> Result
-                        </h5>
-                    </div>
-                    <div class="card-body text-center">
-                        @if (Model.MainImageUrl != null && Model.LogoImageUrl != null)
-                        {
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <h6>Main Image</h6>
-                                    <img src="@Model.MainImageUrl" alt="Main" class="image-preview" style="max-height: 150px;">
-                                </div>
-                                <div class="col-6">
-                                    <h6>Logo</h6>
-                                    <img src="@Model.LogoImageUrl" alt="Logo" class="image-preview" style="max-height: 150px;">
-                                </div>
-                            </div>
-                        }
-
-                        @if (Model.ProcessedImageUrl != null)
-                        {
-                            <div class="mb-4">
-                                <h6>Result with Logo</h6>
-                                <img src="@Model.ProcessedImageUrl" alt="With Logo" class="image-preview mb-3" style="max-height: 300px;">
-                            </div>
-
-                            <div class="d-flex gap-2 justify-content-center">
-                                <a href="@Model.ProcessedImageUrl" class="btn btn-primary" download>
-                                    <i class="bi bi-download"></i> Download
-                                </a>
-                                <button class="btn btn-outline-warning" onclick="location.reload()">
-                                    <i class="bi bi-arrow-clockwise"></i> Try Another
-                                </button>
-                            </div>
-                        }
-                        else if (Model.MainImageUrl != null && Model.LogoImageUrl != null)
-                        {
-                            <div class="text-center py-5">
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="mainImageUrl" value="@Model.MainImageUrl" />
-                                    <input type="hidden" name="logoImageUrl" value="@Model.LogoImageUrl" />
-                                    <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
-                                    <input type="hidden" name="position" value="@Model.Position" />
-                                    <input type="hidden" name="size" value="@Model.Size" />
-
-                                    <button type="submit" class="btn btn-warning" asp-page-handler="Process">
-                                        <i class="bi bi-magic"></i> Add Logo
-                                    </button>
-                                </form>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="text-center py-5 text-muted">
-                                <i class="bi bi-images display-4 mb-3"></i>
-                                <p>Upload both main image and logo to see the result</p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-lightbulb"></i> Tips for Best Results
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Logo Requirements:</h6>
-                                <ul>
-                                    <li>Use PNG format with transparent background</li>
-                                    <li>Simple, clean design works best</li>
-                                    <li>High contrast for visibility</li>
-                                    <li>Vector-based logos scale better</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Positioning Tips:</h6>
-                                <ul>
-                                    <li>Bottom corners avoid covering important content</li>
-                                    <li>Consider image composition and focal points</li>
-                                    <li>Test different sizes on various backgrounds</li>
-                                    <li>Maintain brand consistency</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+        @if (!string.IsNullOrEmpty(Model.CurrentPrompt))
+        {
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>AI Prompt Used:</h6>
+                    <p class="text-muted">@Model.CurrentPrompt</p>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-@section Scripts {
-    <script>
-        // Drag and drop functionality for both zones
-        function setupDropZone(zoneId, contentId, inputId) {
-            const uploadZone = document.getElementById(zoneId);
-            const uploadZoneContent = document.getElementById(contentId);
-            const fileInput = document.getElementById(inputId);
-
-            uploadZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            });
-
-            uploadZone.addEventListener('dragleave', () => {
-                uploadZone.classList.remove('dragover');
-            });
-
-            uploadZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    const fileName = files[0].name;
-                    // Update content without destroying the file input
-                    uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-2"></i>
-                                                   <p class="mb-1">${fileName}</p>
-                                                   <small class="text-muted">File selected</small>`;
-                }
-            });
-
-            fileInput.addEventListener('change', () => {
-                if (fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    const fileName = file.name;
-                    // Update content without destroying the file input
-                    uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-2"></i>
-                                                   <p class="mb-1">${fileName}</p>
-                                                   <small class="text-muted">File selected</small>`;
-                }
-            });
         }
 
-        setupDropZone('mainUploadZone', 'mainUploadZoneContent', 'mainImage');
-        setupDropZone('logoUploadZone', 'logoUploadZoneContent', 'logoImage');
-    </script>
-}
+        @if (!string.IsNullOrEmpty(Model.ResultImageUrl))
+        {
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <h5>Result</h5>
+                    <img src="@Model.ResultImageUrl" class="img-fluid mb-3" style="max-height: 400px;">
+                    <div>
+                        <a href="@Model.ResultImageUrl" class="btn btn-primary" download>Download Result</a>
+                        <a href="@Url.Page("AddLogo")" class="btn btn-secondary">Try Another</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
