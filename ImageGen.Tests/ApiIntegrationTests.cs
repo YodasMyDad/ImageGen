@@ -45,7 +45,7 @@ public class ApiIntegrationTests : TestBase, IDisposable
 
     [Fact]
     [Trait("Category", "Integration")]
-    public async Task TestJsonFormatGeneration()
+    public void TestJsonFormatGeneration()
     {
         // Test that our JSON format matches the curl example
         var request = new GenerateRequest(

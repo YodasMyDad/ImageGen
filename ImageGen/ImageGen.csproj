@@ -6,19 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>ImageGen</PackageId>
-    <Version>1.0.0-beta.1</Version>
+    <Version>1.0.0</Version>
     <Authors>ImageGen Team</Authors>
     <Description>High-fidelity image generation and editing SDK for .NET</Description>
     <PackageTags>image-generation;ai;openai;dalle;image-editing</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/yourorg/imagegen</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/yourorg/imagegen</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/YodasMyDad/ImageGen</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/YodasMyDad/ImageGen</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSymbols>false</IncludeSymbols>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,11 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
-    <PackageReference Include="Polly" Version="8.6.3" />
-    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
-    <PackageReference Include="OpenTelemetry.Api" Version="1.12.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.9" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
     <ItemGroup>

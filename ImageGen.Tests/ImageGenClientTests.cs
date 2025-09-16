@@ -34,7 +34,7 @@ public class ImageGenClientTests : TestBase
     }
 
     [Fact]
-    public async Task ParseImageResponseAsync_WithValidUrl_ReturnsImageResult()
+    public void ParseImageResponseAsync_WithValidUrl_ReturnsImageResult()
     {
         // Arrange
         var mockResponse = new OpenAiImageResponse
@@ -65,7 +65,7 @@ public class ImageGenClientTests : TestBase
         var client = new ImageGenClient(_httpClient, _options, _logger);
 
         // Act & Assert - This should not throw if URL is present
-        await Should.NotThrowAsync(async () =>
+        Should.NotThrow(() =>
         {
             // We can't fully test this without mocking the image download
             // But we can at least test that it doesn't fail on URL parsing
