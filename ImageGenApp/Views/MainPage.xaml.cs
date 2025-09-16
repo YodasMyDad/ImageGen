@@ -4,7 +4,9 @@ using ImageGen.Configuration;
 using ImageGenApp.Models;
 using ImageGenApp.Services;
 using ImageGenApp.Dialogs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -29,7 +31,6 @@ namespace ImageGenApp.Views
         private ILogger<ImageGenClient>? _logger;
         private HttpClient? _httpClient;
         private SettingsService? _settingsService;
-        private AppDbContext? _dbContext;
 
         // UI State
         private string? _primaryImagePath;
@@ -49,25 +50,15 @@ namespace ImageGenApp.Views
         {
             try
             {
-                // Initialize dependencies
-                _httpClient = new HttpClient();
+                // Resolve dependencies from DI
+                var services = App.Services;
+                var httpFactory = services.GetRequiredService<IHttpClientFactory>();
+                _httpClient = httpFactory.CreateClient();
 
-                var loggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
-                {
-                    builder.AddConsole();
-#if DEBUG
-                    builder.SetMinimumLevel(LogLevel.Debug);
-#else
-                    builder.SetMinimumLevel(LogLevel.Information);
-#endif
-                });
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
                 _logger = loggerFactory.CreateLogger<ImageGenClient>();
 
-                // Initialize database and settings
-                _dbContext = new AppDbContext();
-                await _dbContext.Database.EnsureCreatedAsync();
-                var settingsLogger = loggerFactory.CreateLogger<SettingsService>();
-                _settingsService = new SettingsService(_dbContext, settingsLogger);
+                _settingsService = services.GetRequiredService<SettingsService>();
 
                 // Ensure default settings exist
                 await _settingsService.GetSettingsAsync();
@@ -99,7 +90,11 @@ namespace ImageGenApp.Views
                     RequestTimeout = TimeSpan.FromMinutes(5) // Longer timeout for image generation
                 };
 
-                _imageGenClient = new ImageGenClient(_httpClient!, options, _logger!);
+                // Ensure HttpClient is configured for relative API endpoints
+                _httpClient!.BaseAddress = options.BaseUrl;
+                _httpClient.Timeout = options.RequestTimeout;
+
+                _imageGenClient = new ImageGenClient(_httpClient, options, _logger!);
             }
         }
 
@@ -228,6 +223,9 @@ namespace ImageGenApp.Views
                 // Update UI with result
                 DispatcherQueue.TryEnqueue(() =>
                 {
+                    // Hide the placeholder overlay
+                    ResultPlaceholder.Visibility = Visibility.Collapsed;
+
                     var bitmapImage = new BitmapImage();
                     using (var stream = new MemoryStream(result.Bytes.ToArray()))
                     {
@@ -319,6 +317,9 @@ namespace ImageGenApp.Views
             RemovePrimaryButton.Visibility = Visibility.Collapsed;
             DownloadButton.IsEnabled = false;
             CopyPromptButton.IsEnabled = false;
+
+            // Show the placeholder overlay again
+            ResultPlaceholder.Visibility = Visibility.Visible;
         }
 
         private async Task<StorageFile?> PickImageFileAsync()
@@ -395,9 +396,7 @@ namespace ImageGenApp.Views
 
         private void CleanupResources()
         {
-            _httpClient?.Dispose();
             _imageGenClient = null;
-            _dbContext?.Dispose();
 
             foreach (var image in _additionalImages)
             {

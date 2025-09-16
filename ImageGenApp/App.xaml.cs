@@ -1,4 +1,12 @@
+using ImageGenApp.Models;
+using ImageGenApp.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Navigation;
+using System.IO;
+using System.Linq;
 
 namespace ImageGenApp
 {
@@ -7,6 +15,8 @@ namespace ImageGenApp
     /// </summary>
     public partial class App : Application
     {
+        public static IServiceProvider Services { get; private set; } = default!;
+        private readonly IHost _host;
         public static Window? Window { get; private set; }
 
         /// <summary>
@@ -16,6 +26,30 @@ namespace ImageGenApp
         public App()
         {
             this.InitializeComponent();
+
+            _host = Host.CreateDefaultBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddLogging(builder =>
+                    {
+                        builder.AddConsole();
+#if DEBUG
+                        builder.SetMinimumLevel(LogLevel.Debug);
+#else
+                        builder.SetMinimumLevel(LogLevel.Information);
+#endif
+                    });
+
+                    services.AddHttpClient();
+
+                    var dbPath = GetDatabasePath();
+                    services.AddDbContextFactory<AppDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+
+                    services.AddSingleton<SettingsService>();
+                })
+                .Build();
+
+            Services = _host.Services;
         }
 
         /// <summary>
@@ -25,6 +59,18 @@ namespace ImageGenApp
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
+            // Apply EF Core migrations / create DB
+            using (var scope = Services.CreateScope())
+            {
+                var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
+                using var dbContext = factory.CreateDbContext();
+                var hasMigrations = dbContext.Database.GetPendingMigrations().Any();
+                if (hasMigrations)
+                {
+                    dbContext.Database.Migrate();
+                }
+            }
+
             Window ??= new Window();
             Console.WriteLine("Window created");
 
@@ -53,6 +99,13 @@ namespace ImageGenApp
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
+        }
+
+        private static string GetDatabasePath()
+        {
+            var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ImageGenApp", "settings.db");
+            Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+            return dbPath;
         }
     }
 }

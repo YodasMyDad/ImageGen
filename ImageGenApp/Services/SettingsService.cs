@@ -8,12 +8,12 @@ namespace ImageGenApp.Services;
 public class SettingsService
 {
     private readonly ILogger<SettingsService> _logger;
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _dbContextFactory;
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public SettingsService(AppDbContext context, ILogger<SettingsService> logger)
+    public SettingsService(IDbContextFactory<AppDbContext> dbContextFactory, ILogger<SettingsService> logger)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
 
@@ -22,12 +22,13 @@ public class SettingsService
         await _semaphore.WaitAsync();
         try
         {
-            var settings = await _context.Settings.FirstOrDefaultAsync();
+            await using var context = await _dbContextFactory.CreateDbContextAsync();
+            var settings = await context.Settings.FirstOrDefaultAsync();
             if (settings == null)
             {
                 settings = new AppSettings { Id = 1 };
-                _context.Settings.Add(settings);
-                await _context.SaveChangesAsync();
+                context.Settings.Add(settings);
+                await context.SaveChangesAsync();
                 _logger.LogInformation("Created default settings record");
             }
             return settings;
@@ -48,9 +49,10 @@ public class SettingsService
         await _semaphore.WaitAsync();
         try
         {
+            await using var context = await _dbContextFactory.CreateDbContextAsync();
             settings.UpdatedAt = DateTime.UtcNow;
-            _context.Settings.Update(settings);
-            await _context.SaveChangesAsync();
+            context.Settings.Update(settings);
+            await context.SaveChangesAsync();
             _logger.LogInformation("Settings saved successfully");
         }
         catch (Exception ex)
