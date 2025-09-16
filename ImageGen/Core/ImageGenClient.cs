@@ -88,32 +88,6 @@ public sealed class ImageGenClient : IImageGenClient
         }
     }
 
-    /// <summary>
-    /// Create variations of an existing image.
-    /// </summary>
-    public async Task<IReadOnlyList<ImageResult>> VariationsAsync(
-        Stream baseImage,
-        string? prompt = null,
-        int count = 4,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(baseImage);
-        ArgumentOutOfRangeException.ThrowIfLessThan(count, 1);
-
-        _logger.LogInformation("Creating {Count} variations", count);
-
-        try
-        {
-            using var content = CreateVariationsContent(baseImage, prompt, count);
-            using var response = await SendRequestAsync("images/variations", content, cancellationToken);
-            return await ParseImageResponseListAsync(response, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to create variations");
-            throw;
-        }
-    }
 
     // Create HTTP content for image generation
     private HttpContent CreateGenerationContent(GenerateRequest request)
@@ -149,19 +123,19 @@ public sealed class ImageGenClient : IImageGenClient
         // Add primary image
         var primaryContent = new StreamContent(request.PrimaryImage);
         primaryContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-        content.Add(primaryContent, "image", "image.png");
+        content.Add(primaryContent, "image[]", "image.png");
 
-        // Add secondary images if provided
+        // Add secondary images if provided (OpenAI supports multiple images for gpt-image-1)
         if (request.SecondaryImages is not null)
         {
             for (int i = 0; i < request.SecondaryImages.Count; i++)
             {
                 var secondaryContent = new StreamContent(request.SecondaryImages[i]);
                 secondaryContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-                content.Add(secondaryContent, $"secondary_image_{i}", $"secondary_{i}.png");
+                // Use array syntax for multiple images
+                content.Add(secondaryContent, "image[]", $"secondary_{i}.png");
             }
         }
-
         // Add mask if provided
         if (request.Mask is not null)
         {
@@ -187,24 +161,6 @@ public sealed class ImageGenClient : IImageGenClient
         return content;
     }
 
-    // Create HTTP content for image variations
-    private HttpContent CreateVariationsContent(Stream baseImage, string? prompt, int count)
-    {
-        var content = new MultipartFormDataContent();
-
-        content.Add(new StringContent(_options.Model), "model");
-
-        var imageContent = new StreamContent(baseImage);
-        imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-        content.Add(imageContent, "image", "image.png");
-
-        if (!string.IsNullOrEmpty(prompt))
-            content.Add(new StringContent(prompt), "prompt");
-
-        content.Add(new StringContent(count.ToString()), "n");
-
-        return content;
-    }
 
     // Send HTTP request to OpenAI API
     private async Task<HttpResponseMessage> SendRequestAsync(string endpoint, HttpContent content, CancellationToken cancellationToken)

@@ -22,12 +22,4 @@ public interface IImageGenClient
     /// </summary>
     Task<ImageResult> EditAsync(EditRequest request, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Create variations of an existing image.
-    /// </summary>
-    Task<IReadOnlyList<ImageResult>> VariationsAsync(
-        Stream baseImage,
-        string? prompt = null,
-        int count = 4,
-        CancellationToken cancellationToken = default);
 }

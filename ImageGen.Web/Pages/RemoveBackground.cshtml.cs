@@ -19,6 +19,9 @@ public class RemoveBackgroundModel(IImageGenClient imageClient, IWebHostEnvironm
     [BindProperty]
     public string? OriginalImageUrl { get; set; }
 
+    [BindProperty]
+    public string? Prompt { get; set; }
+
     public string? ResultImageUrl { get; set; }
     public string? CurrentPrompt { get; set; }
     public string? ErrorMessage { get; set; }
@@ -55,6 +58,12 @@ public class RemoveBackgroundModel(IImageGenClient imageClient, IWebHostEnvironm
         await ImageFile.CopyToAsync(stream);
 
         OriginalImageUrl = $"/images/{fileName}";
+
+        // Set default prompt based on background type
+        Prompt = BackgroundType == "transparent"
+            ? "Remove the background completely and make it transparent. Keep the subject intact with high detail."
+            : "Remove the background and replace it with a clean white background. Keep the subject intact with high detail.";
+
         return Page();
     }
 
@@ -71,10 +80,8 @@ public class RemoveBackgroundModel(IImageGenClient imageClient, IWebHostEnvironm
 
         try
         {
-            // Create the AI prompt
-            CurrentPrompt = BackgroundType == "transparent"
-                ? "Remove the background completely and make it transparent. Keep the subject intact with high detail."
-                : "Remove the background and replace it with a clean white background. Keep the subject intact with high detail.";
+            // Use the user-provided prompt
+            CurrentPrompt = Prompt ?? "Remove the background completely and make it transparent. Keep the subject intact with high detail.";
 
             // Process with AI
             var imagePath = Path.Combine(environment.WebRootPath, OriginalImageUrl.TrimStart('/'));

@@ -28,6 +28,9 @@ public class ChangeBackgroundModel : PageModel
     [BindProperty]
     public string? ProcessedImageUrl { get; set; }
 
+    [BindProperty]
+    public string? Prompt { get; set; }
+
     public string? ErrorMessage { get; set; }
 
     private string ImagesPath => Path.Combine(_environment.WebRootPath, "images");
@@ -76,6 +79,9 @@ public class ChangeBackgroundModel : PageModel
         OriginalImageUrl = $"/images/{fileName}";
         BackgroundStyle ??= "studio";
 
+        // Set default prompt based on background style
+        Prompt = BackgroundPrompts.GetValueOrDefault(BackgroundStyle, "Place this product on a clean professional background");
+
         return Page();
     }
 
@@ -92,9 +98,8 @@ public class ChangeBackgroundModel : PageModel
             var imagePath = Path.Combine(_environment.WebRootPath, OriginalImageUrl.TrimStart('/'));
             using var imageStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
 
-            var backgroundStyle = BackgroundStyle ?? "studio";
-            var prompt = BackgroundPrompts.GetValueOrDefault(backgroundStyle,
-                "Place this product on a clean professional background");
+            // Use the user-provided prompt
+            var prompt = Prompt ?? "Place this product on a clean professional background";
 
             var editRequest = new EditRequest(
                 PrimaryImage: imageStream,

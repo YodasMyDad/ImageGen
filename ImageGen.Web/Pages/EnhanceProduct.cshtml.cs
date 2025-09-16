@@ -28,6 +28,9 @@ public class EnhanceProductModel : PageModel
     [BindProperty]
     public string? ProcessedImageUrl { get; set; }
 
+    [BindProperty]
+    public string? Prompt { get; set; }
+
     public string? ErrorMessage { get; set; }
 
     private string ImagesPath => Path.Combine(_environment.WebRootPath, "images");
@@ -76,6 +79,9 @@ public class EnhanceProductModel : PageModel
         OriginalImageUrl = $"/images/{fileName}";
         EnhancementType ??= "lighting";
 
+        // Set default prompt based on enhancement type
+        Prompt = EnhancementPrompts.GetValueOrDefault(EnhancementType, "Enhance this product photo with professional quality improvements");
+
         return Page();
     }
 
@@ -92,9 +98,8 @@ public class EnhanceProductModel : PageModel
             var imagePath = Path.Combine(_environment.WebRootPath, OriginalImageUrl.TrimStart('/'));
             using var imageStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
 
-            var enhancementType = EnhancementType ?? "lighting";
-            var prompt = EnhancementPrompts.GetValueOrDefault(enhancementType,
-                "Enhance this product photo with professional quality improvements");
+            // Use the user-provided prompt
+            var prompt = Prompt ?? "Enhance this product photo with professional quality improvements";
 
             var editRequest = new EditRequest(
                 PrimaryImage: imageStream,

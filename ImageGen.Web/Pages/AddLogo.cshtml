@@ -83,35 +83,29 @@
                                 </select>
                             </div>
 
+                            <div class="mb-3">
+                                <label for="prompt" class="form-label">AI Prompt</label>
+                                <textarea name="prompt" id="prompt" class="form-control" rows="3" placeholder="Enter your prompt for logo placement">@Model.Prompt</textarea>
+                            </div>
+
                             <button type="submit" asp-page-handler="Process" class="btn btn-success">Add Logo with AI</button>
                         </form>
+
+                        @if (!string.IsNullOrEmpty(Model.ResultImageUrl))
+                        {
+                            <div class="mt-4">
+                                <h6>Result</h6>
+                                <img src="@Model.ResultImageUrl" class="img-fluid mb-3" style="max-height: 300px;">
+                                <div>
+                                    <a href="@Model.ResultImageUrl" class="btn btn-primary btn-sm" download>Download Result</a>
+                                    <a href="@Url.Page("AddLogo")" class="btn btn-secondary btn-sm">Try Another</a>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
 
-        @if (!string.IsNullOrEmpty(Model.CurrentPrompt))
-        {
-            <div class="card mt-3">
-                <div class="card-body">
-                    <h6>AI Prompt Used:</h6>
-                    <p class="text-muted">@Model.CurrentPrompt</p>
-                </div>
-            </div>
-        }
-
-        @if (!string.IsNullOrEmpty(Model.ResultImageUrl))
-        {
-            <div class="card mt-3">
-                <div class="card-body text-center">
-                    <h5>Result</h5>
-                    <img src="@Model.ResultImageUrl" class="img-fluid mb-3" style="max-height: 400px;">
-                    <div>
-                        <a href="@Model.ResultImageUrl" class="btn btn-primary" download>Download Result</a>
-                        <a href="@Url.Page("AddLogo")" class="btn btn-secondary">Try Another</a>
-                    </div>
-                </div>
-            </div>
-        }
     }
 </div>

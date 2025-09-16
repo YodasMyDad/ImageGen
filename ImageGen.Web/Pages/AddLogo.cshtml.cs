@@ -28,6 +28,9 @@ public class AddLogoModel(IImageGenClient imageClient, IWebHostEnvironment envir
     [BindProperty]
     public string? LogoImageUrl { get; set; }
 
+    [BindProperty]
+    public string? Prompt { get; set; }
+
     public string? ResultImageUrl { get; set; }
     public string? CurrentPrompt { get; set; }
     public string? ErrorMessage { get; set; }
@@ -63,6 +66,28 @@ public class AddLogoModel(IImageGenClient imageClient, IWebHostEnvironment envir
         MainImageUrl = $"/images/{mainFileName}";
         LogoImageUrl = $"/images/{logoFileName}";
 
+        // Set default prompt based on position and size
+        var positionText = Position switch
+        {
+            "bottom-right" => "bottom right corner",
+            "bottom-left" => "bottom left corner",
+            "top-right" => "top right corner",
+            "top-left" => "top left corner",
+            "center" => "center",
+            _ => "bottom right corner"
+        };
+
+        var sizeText = Size switch
+        {
+            "small" => "small (10% of image width)",
+            "medium" => "medium (15% of image width)",
+            "large" => "large (20% of image width)",
+            "xlarge" => "extra large (25% of image width)",
+            _ => "medium (15% of image width)"
+        };
+
+        Prompt = $"The first image is the background. The second image is the logo. Place the logo over the background in the {positionText}. Make the logo {sizeText}. Blend it naturally and ensure it looks professional.";
+
         return Page();
     }
 
@@ -79,27 +104,8 @@ public class AddLogoModel(IImageGenClient imageClient, IWebHostEnvironment envir
 
         try
         {
-            // Build the prompt for the AI
-            var positionText = Position switch
-            {
-                "bottom-right" => "bottom right corner",
-                "bottom-left" => "bottom left corner",
-                "top-right" => "top right corner",
-                "top-left" => "top left corner",
-                "center" => "center",
-                _ => "bottom right corner"
-            };
-
-            var sizeText = Size switch
-            {
-                "small" => "small (10% of image width)",
-                "medium" => "medium (15% of image width)",
-                "large" => "large (20% of image width)",
-                "xlarge" => "extra large (25% of image width)",
-                _ => "medium (15% of image width)"
-            };
-
-            CurrentPrompt = $"Add a logo to the {positionText} of the image. Make the logo {sizeText}. Blend it naturally and ensure it looks professional.";
+            // Use the user-provided prompt
+            CurrentPrompt = Prompt ?? "The first image is the background. The second image is the logo. Place the logo over the background. Blend it naturally and ensure it looks professional.";
 
             // Process with AI
             var mainPath = Path.Combine(environment.WebRootPath, MainImageUrl.TrimStart('/'));

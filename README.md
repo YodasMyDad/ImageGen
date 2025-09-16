@@ -2,22 +2,25 @@
 
 **AI-Powered Image Editing for .NET Developers**
 
-Transform images with OpenAI's GPT-Image-1 model. Generate, edit, and enhance images using simple C# code. Perfect for web apps, APIs, and automation tools.
+Transform and create images with OpenAI's new gpt-image-1 model. Generate, edit, and enhance images using simple C# code. Perfect for web apps, APIs, and automation tools.
+
+*When creating high quality and high fidelity images the API can take up to 60+ seconds to respond*
 
 [![NuGet](https://img.shields.io/nuget/v/ImageGen.svg)](https://www.nuget.org/packages/ImageGen/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/)
 
 
-## ✨ Cool Things You Can Do
+## ✨ Cool Ideas You Can Do
 
 - **Remove backgrounds** from product photos instantly
 - **Change backgrounds** to any scene or environment
 - **Add logos/watermarks** with perfect positioning
 - **Enhance product photos** with professional lighting and details
-- **Generate image variations** with different artistic styles
 - **Create images from text** descriptions
 - **Batch process** multiple images at once
+
+Your imagination is the limit!
 
 ## 🚀 Quick Start
 
@@ -28,6 +31,8 @@ dotnet add package ImageGen
 ```
 
 ### 2. Configure Your App
+
+**Important:** You need to make sure your API key has access to the gpt-image-1 model or this will fail.
 
 ```csharp
 // In Program.cs
@@ -45,6 +50,8 @@ var app = builder.Build();
 ```
 
 ### 3. Quick Stream Examples
+
+Some examples of how to get an image stream into ImageGen.
 
 **From a file on disk:**
 ```csharp
@@ -158,18 +165,22 @@ public async Task<byte[]> GenerateImage(string description)
 }
 ```
 
-### Create Multiple Variations
-```csharp
-public async Task<List<byte[]>> CreateVariations(Stream baseImage)
-{
-    var variations = await client.VariationsAsync(
-        baseImage: baseImage,
-        prompt: "Create artistic variations with different lighting",
-        count: 4
-    );
 
-    return variations.Select(v => v.Bytes.ToArray()).ToList();
-}
+## 💾 Saving Images to Disk
+
+To save images to disk, simply write the bytes to a file:
+
+```csharp
+// Save any result to disk
+await File.WriteAllBytesAsync("output.png", result.Bytes.ToArray());
+
+// Or with automatic file extension based on format
+var extension = result.Format switch {
+    ImageFormat.Png => "png",
+    ImageFormat.Jpeg => "jpg",
+    ImageFormat.Webp => "webp"
+};
+await File.WriteAllBytesAsync($"output.{extension}", result.Bytes.ToArray());
 ```
 
 ## ⚙️ Configuration
@@ -207,7 +218,6 @@ builder.Services.AddImageGenClient(options =>
 ### Main Methods
 - `GenerateAsync()` - Create images from text prompts
 - `EditAsync()` - Edit existing images with prompts
-- `VariationsAsync()` - Create multiple variations
 - `GenerateManyAsync()` - Batch generate multiple images
 
 ### Key Classes
@@ -229,7 +239,6 @@ Visit `http://localhost:5001` to try:
 - **Add logos** - Place logos on images with perfect positioning
 - **Change backgrounds** - Replace image backgrounds with new scenes
 - **Enhance products** - Improve product photos with better details
-- **Create variations** - Generate multiple creative versions
 
 Each example shows you the exact AI prompt being used, so you can learn and adapt them for your own projects!
 
