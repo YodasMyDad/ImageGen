@@ -65,9 +65,9 @@ public sealed record EditRequest(
 
     /// <summary>
     /// The output format for the edited image.
-    /// Defaults to PNG for best quality and transparency support.
+    /// Defaults to JPEG for smaller file sizes and better web compatibility.
     /// </summary>
-    ImageFormat Format = ImageFormat.Png,
+    ImageFormat Format = ImageFormat.Jpeg,
 
     /// <summary>
     /// Additional provider-specific parameters.

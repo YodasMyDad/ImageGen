@@ -25,9 +25,9 @@ public sealed class ImageGenOptions
 
     /// <summary>
     /// Gets or sets the timeout for individual requests.
-    /// Defaults to 2 minutes to allow for image generation time.
+    /// Defaults to 5 minutes to allow for complex operations like background removal.
     /// </summary>
-    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(2);
+    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Gets or sets the maximum number of retry attempts for failed requests.

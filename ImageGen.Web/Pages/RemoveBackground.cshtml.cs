@@ -2,20 +2,14 @@ using ImageGen.Core;
 using ImageGen.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using SixLabors.ImageSharp;
+using System.Collections.Generic;
 
 namespace ImageGen.Web.Pages;
 
-public class RemoveBackgroundModel : PageModel
+public class RemoveBackgroundModel(IImageGenClient imageClient, IWebHostEnvironment environment)
+    : PageModel
 {
-    private readonly IImageGenClient _imageClient;
-    private readonly IWebHostEnvironment _environment;
-
-    public RemoveBackgroundModel(IImageGenClient imageClient, IWebHostEnvironment environment)
-    {
-        _imageClient = imageClient;
-        _environment = environment;
-    }
-
     [BindProperty]
     public IFormFile? ImageFile { get; set; }
 
@@ -30,7 +24,7 @@ public class RemoveBackgroundModel : PageModel
 
     public string? ErrorMessage { get; set; }
 
-    private string ImagesPath => Path.Combine(_environment.WebRootPath, "images");
+    private string ImagesPath => Path.Combine(environment.WebRootPath, "images");
 
     public async Task<IActionResult> OnPostUploadAsync()
     {
@@ -47,6 +41,41 @@ public class RemoveBackgroundModel : PageModel
         if (!allowedExtensions.Contains(extension))
         {
             ErrorMessage = "Only image files (.jpg, .png, .webp) are allowed.";
+            return Page();
+        }
+
+        // Validate file size (4MB limit for DALL-E API)
+        const long maxFileSize = 4 * 1024 * 1024; // 4MB
+        if (ImageFile.Length > maxFileSize)
+        {
+            ErrorMessage = $"Image file size must be less than 4MB. Your file is {ImageFile.Length / 1024 / 1024:F1}MB.";
+            return Page();
+        }
+
+        // Validate image dimensions
+        try
+        {
+            using var imageStream = ImageFile.OpenReadStream();
+            using var image = SixLabors.ImageSharp.Image.Load(imageStream);
+
+            const int maxDimension = 4096; // DALL-E maximum dimension
+            if (image.Width > maxDimension || image.Height > maxDimension)
+            {
+                ErrorMessage = $"Image dimensions must be less than {maxDimension}x{maxDimension} pixels. Your image is {image.Width}x{image.Height} pixels.";
+                return Page();
+            }
+
+            // Also check minimum dimensions
+            const int minDimension = 64;
+            if (image.Width < minDimension || image.Height < minDimension)
+            {
+                ErrorMessage = $"Image dimensions must be at least {minDimension}x{minDimension} pixels. Your image is {image.Width}x{image.Height} pixels.";
+                return Page();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Unable to validate image: {ex.Message}. Please ensure the file is a valid image.";
             return Page();
         }
 
@@ -79,7 +108,7 @@ public class RemoveBackgroundModel : PageModel
 
         try
         {
-            var imagePath = Path.Combine(_environment.WebRootPath, OriginalImageUrl.TrimStart('/'));
+            var imagePath = Path.Combine(environment.WebRootPath, OriginalImageUrl.TrimStart('/'));
             using var imageStream = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
 
             var backgroundType = BackgroundType ?? "transparent";
@@ -87,16 +116,33 @@ public class RemoveBackgroundModel : PageModel
                 ? "Remove the background completely, make it transparent, keep the subject intact with high detail"
                 : "Remove the background and replace it with a clean white background, keep the subject intact with high detail";
 
+            var extension = Path.GetExtension(imagePath).ToLowerInvariant();
+            var contentType = extension switch
+            {
+                ".png" => "image/png",
+                ".jpg" => "image/jpeg",
+                ".jpeg" => "image/jpeg",
+                ".webp" => "image/webp",
+                _ => "application/octet-stream"
+            };
+            var originalFileName = Path.GetFileName(imagePath);
+            var extra = new Dictionary<string, string>
+            {
+                ["filename"] = originalFileName,
+                ["content_type"] = contentType
+            };
+
             var editRequest = new EditRequest(
                 PrimaryImage: imageStream,
                 Prompt: prompt,
                 InputFidelity: InputFidelity.High,
                 Quality: ImageQuality.High,
                 Format: backgroundType == "transparent" ? ImageFormat.Png : ImageFormat.Jpeg,
-                TransparentBackground: backgroundType == "transparent"
+                TransparentBackground: backgroundType == "transparent",
+                Extra: extra
             );
 
-            var result = await _imageClient.EditAsync(editRequest);
+            var result = await imageClient.EditAsync(editRequest);
 
             // Save processed image
             var processedFileName = $"processed_{Guid.NewGuid()}.{result.Format.ToString().ToLower()}";

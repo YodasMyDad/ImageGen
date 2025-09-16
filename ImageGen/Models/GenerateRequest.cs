@@ -39,9 +39,9 @@ public sealed record GenerateRequest(
 
     /// <summary>
     /// The output format for the generated image.
-    /// Defaults to PNG for best quality and transparency support.
+    /// Defaults to JPEG for smaller file sizes and better web compatibility.
     /// </summary>
-    ImageFormat Format = ImageFormat.Png,
+    ImageFormat Format = ImageFormat.Jpeg,
 
     /// <summary>
     /// An optional seed for reproducible generation.
