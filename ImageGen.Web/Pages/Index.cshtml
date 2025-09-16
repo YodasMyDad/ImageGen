@@ -8,15 +8,12 @@
     <div class="text-center mb-5">
         <h1 class="display-4">AI Image Editing Demo</h1>
         <p class="lead text-muted">
-            Simple examples using OpenAI's GPT-Image-1 model for image generation and editing.
+            Some idea examples of using OpenAI's new gpt-image-1 model for image generation and editing <br />(Make sure your API key has permission to use gpt-image-1)
         </p>
-        <div class="alert alert-info mt-3">
-            <strong>Note:</strong> Make sure your OpenAI API key is configured in appsettings.json
-        </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <div class="mb-3">
@@ -29,7 +26,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <div class="mb-3">
@@ -42,7 +39,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <div class="mb-3">
@@ -55,7 +52,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body text-center">
                     <div class="mb-3">
@@ -64,6 +61,19 @@
                     <h5 class="card-title">Enhance Product</h5>
                     <p class="card-text">Improve product photos</p>
                     <a asp-page="/EnhanceProduct" class="btn btn-info">Try It</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-magic display-4 text-secondary"></i>
+                    </div>
+                    <h5 class="card-title">Custom AI</h5>
+                    <p class="card-text">Process images with custom AI prompts</p>
+                    <a asp-page="/Custom" class="btn btn-secondary">Try It</a>
                 </div>
             </div>
         </div>
