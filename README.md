@@ -1,4 +1,4 @@
-# ImageGen 🖼️
+# ImageGenAi 🖼️
 
 **AI-Powered Image Editing for .NET Developers**
 
@@ -6,19 +6,18 @@ Transform and create images with OpenAI's new gpt-image-1 model. Generate, edit,
 
 *When creating high quality and high fidelity images the API can take up to 60+ seconds to respond*
 
-[![NuGet](https://img.shields.io/nuget/v/ImageGen.svg)](https://www.nuget.org/packages/ImageGen/)
+[![NuGet](https://img.shields.io/nuget/v/ImageGenAi.svg)](https://www.nuget.org/packages/ImageGenAi/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/)
 
 
-## ✨ Cool Ideas You Can Do
+## ✨ Examples In The Demo Web Project
 
 - **Remove backgrounds** from product photos instantly
 - **Change backgrounds** to any scene or environment
 - **Add logos/watermarks** with perfect positioning
 - **Enhance product photos** with professional lighting and details
 - **Create images from text** descriptions
-- **Batch process** multiple images at once
 
 Your imagination is the limit!
 
@@ -27,12 +26,12 @@ Your imagination is the limit!
 ### 1. Install the Package
 
 ```bash
-dotnet add package ImageGen
+dotnet add package ImageGenAi
 ```
 
 ### 2. Configure Your App
 
-**Important:** You need to make sure your API key has access to the gpt-image-1 model or this will fail.
+**Important:** You need to make sure your API key has access to the gpt-image-1 model or this will fail. Get your API key from https://platform.openai.com/api-keys
 
 ```csharp
 // In Program.cs
@@ -40,10 +39,10 @@ using ImageGen.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add ImageGen with your OpenAI API key
 builder.Services.AddImageGenClient(options =>
 {
     options.ApiKey = builder.Configuration["OPENAI_API_KEY"]!;
+    // Api key from appsettings.json
 });
 
 var app = builder.Build();
@@ -165,7 +164,6 @@ public async Task<byte[]> GenerateImage(string description)
 }
 ```
 
-
 ## 💾 Saving Images to Disk
 
 To save images to disk, simply write the bytes to a file:
@@ -183,28 +181,6 @@ var extension = result.Format switch {
 await File.WriteAllBytesAsync($"output.{extension}", result.Bytes.ToArray());
 ```
 
-## ⚙️ Configuration
-
-```csharp
-builder.Services.AddImageGenClient(options =>
-{
-    // Required: Your OpenAI API key
-    options.ApiKey = builder.Configuration["OPENAI_API_KEY"]!;
-
-    // Optional: Timeout for API calls (default: 3 minutes)
-    options.RequestTimeout = TimeSpan.FromMinutes(3);
-});
-```
-
-**Add to appsettings.json:**
-```json
-{
-  "ImageGen": {
-    "ApiKey": "sk-your-api-key-here"
-  }
-}
-```
-
 ## 🎯 Key Features
 
 - **High-Fidelity Editing**: `InputFidelity.High` preserves faces, logos, and details
@@ -218,23 +194,11 @@ builder.Services.AddImageGenClient(options =>
 ### Main Methods
 - `GenerateAsync()` - Create images from text prompts
 - `EditAsync()` - Edit existing images with prompts
-- `GenerateManyAsync()` - Batch generate multiple images
-
-### Key Classes
-- `EditRequest` - Configure image editing
-- `GenerateRequest` - Configure image generation
-- `ImageResult` - Contains the processed image data
 
 ## 🖥️ Try the Demo
 
 Want to see it in action? Check out the **simple web demo**:
 
-```bash
-cd ImageGen.Web
-dotnet run
-```
-
-Visit `http://localhost:5001` to try:
 - **Remove backgrounds** - Upload an image and make the background transparent or white
 - **Add logos** - Place logos on images with perfect positioning
 - **Change backgrounds** - Replace image backgrounds with new scenes
@@ -248,15 +212,6 @@ Each example shows you the exact AI prompt being used, so you can learn and adap
 - **Error Handling**: See `ImageGenException`, `RateLimitExceededException`
 - **Best Practices**: Always use `InputFidelity.High` for important edits
 
-## 🤝 Contributing
-
-Found a bug or want to add a feature? We'd love your help!
-
-1. Fork the repo
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
 ## 📄 License
 
 MIT License - see LICENSE file for details.
@@ -265,4 +220,4 @@ MIT License - see LICENSE file for details.
 
 **Ready to supercharge your .NET apps with AI image editing?** 🚀
 
-Start with the demo app, then integrate ImageGen into your project today!
+Start with the demo app, then integrate ImageGenAI into your project today!

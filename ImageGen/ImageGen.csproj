@@ -5,10 +5,10 @@
     <LangVersion>12.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>ImageGen</PackageId>
+    <PackageId>ImageGenAi</PackageId>
     <Version>1.0.0</Version>
-    <Authors>ImageGen Team</Authors>
-    <Description>High-fidelity image generation and editing SDK for .NET</Description>
+    <Authors>Lee Messenger</Authors>
+    <Description>Easy to use SDK for high-fidelity image generation and editing using OpenAi's new gpt-image-1 model</Description>
     <PackageTags>image-generation;ai;openai;dalle;image-editing</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/YodasMyDad/ImageGen</PackageProjectUrl>
