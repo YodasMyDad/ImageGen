@@ -1,0 +1,106 @@
+@page
+@using ImageGen.Models
+@model CustomModel
+@{
+    ViewData["Title"] = "Custom AI Processing";
+}
+
+<div class="container mt-4">
+    <h1>Custom AI Image Processing</h1>
+    <p class="text-muted">Upload an image and enter any custom prompt to process it with AI.</p>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    @if (string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <!-- Upload Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Step 1: Upload Image</h5>
+                <form method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Select Image</label>
+                        <input type="file" name="imageFile" accept="image/*" class="form-control" required>
+                        <div class="form-text">Supported formats: JPG, PNG, WebP</div>
+                    </div>
+                    <button type="submit" asp-page-handler="Upload" class="btn btn-primary">Upload Image</button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Preview and Process -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Original Image</h5>
+                        <img src="@Model.ImageUrl" class="img-fluid" style="max-height: 300px;">
+                        <div class="mt-3">
+                            <a href="@Url.Page("Custom")" class="btn btn-outline-secondary btn-sm">Upload Different Image</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Step 2: Configure & Process</h5>
+                        <form method="post">
+                            <input type="hidden" name="imageUrl" value="@Model.ImageUrl">
+
+                            <div class="mb-3">
+                                <label for="prompt" class="form-label">AI Prompt</label>
+                                <textarea name="prompt" id="prompt" class="form-control" rows="4" placeholder="Enter your custom prompt for AI processing..." required>@Model.Prompt</textarea>
+                                <div class="form-text">Describe what you want the AI to do with your image</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="quality" class="form-label">Quality</label>
+                                        <select name="quality" id="quality" class="form-select">
+                                            <option value="Standard" selected="@(Model.Quality == ImageQuality.Standard)">Standard</option>
+                                            <option value="High" selected="@(Model.Quality == ImageQuality.High)">High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="format" class="form-label">Output Format</label>
+                                        <select name="format" id="format" class="form-select">
+                                            <option value="Png" selected="@(Model.Format == ImageFormat.Png)">PNG</option>
+                                            <option value="Jpeg" selected="@(Model.Format == ImageFormat.Jpeg)">JPEG</option>
+                                            <option value="Webp" selected="@(Model.Format == ImageFormat.Webp)">WebP</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" asp-page-handler="Process" class="btn btn-success">Process with AI</button>
+                        </form>
+
+                        @if (!string.IsNullOrEmpty(Model.ResultImageUrl))
+                        {
+                            <div class="mt-4">
+                                <h6>AI Result</h6>
+                                <div class="mb-3">
+                                    <strong>Prompt used:</strong> @Model.CurrentPrompt
+                                </div>
+                                <img src="@Model.ResultImageUrl" class="img-fluid mb-3" style="max-height: 300px;">
+                                <div>
+                                    <a href="@Model.ResultImageUrl" class="btn btn-primary btn-sm" download>Download Result</a>
+                                    <a href="@Url.Page("Custom")" class="btn btn-secondary btn-sm">Try Another</a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

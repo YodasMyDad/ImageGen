@@ -14,17 +14,15 @@ builder.Services.AddImageResize(builder.Environment);
 // Configure ImageGen client - this is the main service for AI image operations
 builder.Services.AddImageGenClient(options =>
 {
-    // Get OpenAI API key from configuration
-    var apiKey = builder.Configuration["ImageGen:ApiKey"] ??
-        throw new InvalidOperationException("ImageGen API key not found in configuration");
+    // Get OpenAI API key from configuration (optional now)
+    var apiKey = builder.Configuration["ImageGen:ApiKey"];
 
-    // Validate the API key is configured
-    if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "your-openai-api-key-here")
+    // Set API key if available, otherwise leave empty (will be checked in UI)
+    if (!string.IsNullOrWhiteSpace(apiKey) && apiKey != "your-openai-api-key-here")
     {
-        throw new InvalidOperationException("Please set a valid OpenAI API key in appsettings.json");
+        options.ApiKey = apiKey;
     }
 
-    options.ApiKey = apiKey;
     options.RequestTimeout = TimeSpan.FromMinutes(3); // Allow time for AI processing
 });
 

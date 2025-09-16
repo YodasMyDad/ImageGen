@@ -1,3 +1,4 @@
+using ImageGen.Configuration;
 using ImageGen.Core;
 using ImageGen.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace ImageGen.Web.Pages;
 /// <summary>
 /// Simple demo page for adding logos to images using AI.
 /// </summary>
-public class AddLogoModel(IImageGenClient imageClient, IWebHostEnvironment environment) : PageModel
+public class AddLogoModel(ImageGenOptions options, IImageGenClient imageClient, IWebHostEnvironment environment) : BasePageModel(options)
 {
     [BindProperty]
     public IFormFile? MainImage { get; set; }

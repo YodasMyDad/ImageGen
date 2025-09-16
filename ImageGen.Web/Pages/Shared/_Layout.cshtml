@@ -71,11 +71,23 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/EnhanceProduct">Enhance Product</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Custom">Custom AI</a>
+                        </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
+
+    @if (!(ViewData["IsApiKeyConfigured"] as bool? ?? true))
+    {
+        <div class="alert alert-warning alert-dismissible fade show m-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>API Key Required:</strong> Please configure your OpenAI API key in <code>appsettings.json</code> to use the image generation features.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <main role="main">
         @RenderBody()

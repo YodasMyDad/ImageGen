@@ -33,6 +33,12 @@ public sealed class ImageGenClient : IImageGenClient
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // Check if API key is configured
+        if (string.IsNullOrWhiteSpace(_options.ApiKey))
+        {
+            throw new ImageGenClientException("OpenAI API key is not configured. Please set the API key in appsettings.json", 401);
+        }
+
         _logger.LogInformation("Generating image: {Prompt}", TruncatePrompt(request.Prompt));
 
         try
@@ -72,6 +78,12 @@ public sealed class ImageGenClient : IImageGenClient
     public async Task<ImageResult> EditAsync(EditRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        // Check if API key is configured
+        if (string.IsNullOrWhiteSpace(_options.ApiKey))
+        {
+            throw new ImageGenClientException("OpenAI API key is not configured. Please set the API key in appsettings.json", 401);
+        }
 
         _logger.LogInformation("Editing image: {Prompt}", TruncatePrompt(request.Prompt));
 

@@ -7,21 +7,24 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace ImageGen.Web.Pages;
 
 /// <summary>
-/// Simple demo page for removing image backgrounds using AI.
+/// Custom AI image processing page allowing users to upload images and enter any prompt.
 /// </summary>
-public class RemoveBackgroundModel(ImageGenOptions options, IImageGenClient imageClient, IWebHostEnvironment environment) : BasePageModel(options)
+public class CustomModel(ImageGenOptions options, IImageGenClient imageClient, IWebHostEnvironment environment) : BasePageModel(options)
 {
     [BindProperty]
     public IFormFile? ImageFile { get; set; }
 
     [BindProperty]
-    public string? BackgroundType { get; set; } = "transparent";
-
-    [BindProperty]
-    public string? OriginalImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
 
     [BindProperty]
     public string? Prompt { get; set; }
+
+    [BindProperty]
+    public ImageQuality Quality { get; set; } = ImageQuality.High;
+
+    [BindProperty]
+    public ImageFormat Format { get; set; } = ImageFormat.Png;
 
     public string? ResultImageUrl { get; set; }
     public string? CurrentPrompt { get; set; }
@@ -30,7 +33,7 @@ public class RemoveBackgroundModel(ImageGenOptions options, IImageGenClient imag
     private string ImagesPath => Path.Combine(environment.WebRootPath, "images");
 
     /// <summary>
-    /// Upload and validate the image.
+    /// Handle image upload and show preview.
     /// </summary>
     public async Task<IActionResult> OnPostUploadAsync()
     {
@@ -58,42 +61,42 @@ public class RemoveBackgroundModel(ImageGenOptions options, IImageGenClient imag
         await using var stream = new FileStream(filePath, FileMode.Create);
         await ImageFile.CopyToAsync(stream);
 
-        OriginalImageUrl = $"/images/{fileName}";
-
-        // Set default prompt based on background type
-        Prompt = BackgroundType == "transparent"
-            ? "Remove the background completely and make it transparent. Keep the subject intact with high detail."
-            : "Remove the background and replace it with a clean white background. Keep the subject intact with high detail.";
+        ImageUrl = $"/images/{fileName}";
 
         return Page();
     }
 
     /// <summary>
-    /// Process the image to remove background.
+    /// Process image with custom AI prompt.
     /// </summary>
     public async Task<IActionResult> OnPostProcessAsync()
     {
-        if (string.IsNullOrEmpty(OriginalImageUrl))
+        if (string.IsNullOrEmpty(ImageUrl))
         {
             ErrorMessage = "Please upload an image first.";
             return Page();
         }
 
+        if (string.IsNullOrWhiteSpace(Prompt))
+        {
+            ErrorMessage = "Please enter a prompt for the AI.";
+            return Page();
+        }
+
         try
         {
-            // Use the user-provided prompt
-            CurrentPrompt = Prompt ?? "Remove the background completely and make it transparent. Keep the subject intact with high detail.";
+            // Store the current prompt for display
+            CurrentPrompt = Prompt;
 
             // Process with AI
-            var imagePath = Path.Combine(environment.WebRootPath, OriginalImageUrl.TrimStart('/'));
+            var imagePath = Path.Combine(environment.WebRootPath, ImageUrl.TrimStart('/'));
             using var imageStream = new FileStream(imagePath, FileMode.Open);
 
             var request = new EditRequest(
                 PrimaryImage: imageStream,
-                Prompt: CurrentPrompt,
-                Quality: ImageQuality.High,
-                Format: BackgroundType == "transparent" ? ImageFormat.Png : ImageFormat.Jpeg,
-                TransparentBackground: BackgroundType == "transparent"
+                Prompt: Prompt,
+                Quality: Quality,
+                Format: Format
             );
 
             var result = await imageClient.EditAsync(request);

@@ -1,3 +1,4 @@
+using ImageGen.Configuration;
 using ImageGen.Core;
 using ImageGen.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -5,16 +6,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ImageGen.Web.Pages;
 
-public class ChangeBackgroundModel : PageModel
+public class ChangeBackgroundModel(ImageGenOptions options, IImageGenClient imageClient, IWebHostEnvironment environment) : BasePageModel(options)
 {
-    private readonly IImageGenClient _imageClient;
-    private readonly IWebHostEnvironment _environment;
-
-    public ChangeBackgroundModel(IImageGenClient imageClient, IWebHostEnvironment environment)
-    {
-        _imageClient = imageClient;
-        _environment = environment;
-    }
+    private readonly IImageGenClient _imageClient = imageClient;
+    private readonly IWebHostEnvironment _environment = environment;
 
     [BindProperty]
     public IFormFile? ImageFile { get; set; }

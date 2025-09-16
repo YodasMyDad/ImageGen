@@ -1,16 +1,12 @@
+using ImageGen.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ImageGen.Web.Pages;
 
-public class IndexModel : PageModel
+public class IndexModel(ImageGenOptions options, ILogger<IndexModel> logger) : BasePageModel(options)
 {
-    private readonly ILogger<IndexModel> _logger;
-
-    public IndexModel(ILogger<IndexModel> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<IndexModel> _logger = logger;
 
     public void OnGet()
     {
