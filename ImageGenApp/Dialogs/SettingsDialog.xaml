@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentDialog
+    x:Class="ImageGenApp.Dialogs.SettingsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:ImageGen.Models"
+    mc:Ignorable="d"
+    Title="⚙️ Settings"
+    PrimaryButtonText="Save"
+    SecondaryButtonText="Cancel"
+    DefaultButton="Primary">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" Margin="0,10,0,0">
+            <!-- API Key Section -->
+            <Border BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1" CornerRadius="4" Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="API Configuration" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock Text="Enter your ImageGen API key to enable image generation." FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" TextWrapping="Wrap"/>
+                    <TextBox x:Name="ApiKeyTextBox" PlaceholderText="Enter your API key..." FontSize="14"/>
+                    <TextBlock Text="🔒 Your API key is stored securely on your local device only." FontSize="11" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Default Settings Section -->
+            <Border BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1" CornerRadius="4" Padding="15">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Default Generation Settings" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock Text="These settings will be used as defaults for all image generations." FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" TextWrapping="Wrap"/>
+
+                    <!-- Quality Setting -->
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Image Quality" FontSize="14" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="QualityComboBox" FontSize="14">
+                            <ComboBoxItem Content="Standard" Tag="Standard"/>
+                            <ComboBoxItem Content="High" Tag="High"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Format Setting -->
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Output Format" FontSize="14" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="FormatComboBox" FontSize="14">
+                            <ComboBoxItem Content="JPEG" Tag="Jpeg"/>
+                            <ComboBoxItem Content="PNG" Tag="Png"/>
+                            <ComboBoxItem Content="WebP" Tag="Webp"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Fidelity Setting -->
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Input Fidelity" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBlock Text="Higher fidelity preserves more details from input images." FontSize="11" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" TextWrapping="Wrap"/>
+                        <ComboBox x:Name="FidelityComboBox" FontSize="14">
+                            <ComboBoxItem Content="Default" Tag="Default"/>
+                            <ComboBoxItem Content="High" Tag="High"/>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- About Section -->
+            <Border BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1" CornerRadius="4" Padding="15" Background="{ThemeResource SystemControlAcrylicElementBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="About" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock Text="AI Image Generator" FontSize="14" FontWeight="SemiBold"/>
+                    <TextBlock Text="A modern desktop application for AI-powered image generation and editing." TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Text="Built with WinUI 3 and .NET 9" FontSize="11" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

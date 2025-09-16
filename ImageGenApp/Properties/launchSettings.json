@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ImageGenApp (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ImageGenApp (Unpackaged)": {
+      "commandName": "Project"
+    }
+  },
+  "activeProfile": "ImageGenApp (Unpackaged)"
+}

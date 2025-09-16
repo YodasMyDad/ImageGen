@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{EAE18313-4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGen.Tests", "ImageGen.Tests\ImageGen.Tests.csproj", "{527FFA5F-3AB5-451A-B457-7997D8CCF213}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageGenApp", "ImageGenApp\ImageGenApp.csproj", "{67825970-1104-430B-A137-B7084D2B118A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,18 @@ Global
 		{527FFA5F-3AB5-451A-B457-7997D8CCF213}.Release|x64.Build.0 = Release|Any CPU
 		{527FFA5F-3AB5-451A-B457-7997D8CCF213}.Release|x86.ActiveCfg = Release|Any CPU
 		{527FFA5F-3AB5-451A-B457-7997D8CCF213}.Release|x86.Build.0 = Release|Any CPU
+		{67825970-1104-430B-A137-B7084D2B118A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{67825970-1104-430B-A137-B7084D2B118A}.Debug|Any CPU.Build.0 = Debug|x86
+		{67825970-1104-430B-A137-B7084D2B118A}.Debug|x64.ActiveCfg = Debug|x64
+		{67825970-1104-430B-A137-B7084D2B118A}.Debug|x64.Build.0 = Debug|x64
+		{67825970-1104-430B-A137-B7084D2B118A}.Debug|x86.ActiveCfg = Debug|x86
+		{67825970-1104-430B-A137-B7084D2B118A}.Debug|x86.Build.0 = Debug|x86
+		{67825970-1104-430B-A137-B7084D2B118A}.Release|Any CPU.ActiveCfg = Release|x86
+		{67825970-1104-430B-A137-B7084D2B118A}.Release|Any CPU.Build.0 = Release|x86
+		{67825970-1104-430B-A137-B7084D2B118A}.Release|x64.ActiveCfg = Release|x64
+		{67825970-1104-430B-A137-B7084D2B118A}.Release|x64.Build.0 = Release|x64
+		{67825970-1104-430B-A137-B7084D2B118A}.Release|x86.ActiveCfg = Release|x86
+		{67825970-1104-430B-A137-B7084D2B118A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
