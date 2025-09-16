@@ -25,8 +25,9 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Ensure only one settings record exists
+        // Configure AppSettings as a singleton
         modelBuilder.Entity<AppSettings>()
-            .HasData(new AppSettings { Id = 1 });
+            .HasIndex(s => s.Id)
+            .IsUnique();
     }
 }

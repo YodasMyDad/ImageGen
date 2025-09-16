@@ -9,6 +9,7 @@ public class SettingsService
 {
     private readonly ILogger<SettingsService> _logger;
     private readonly AppDbContext _context;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public SettingsService(AppDbContext context, ILogger<SettingsService> logger)
     {
@@ -18,26 +19,33 @@ public class SettingsService
 
     public async Task<AppSettings> GetSettingsAsync()
     {
+        await _semaphore.WaitAsync();
         try
         {
             var settings = await _context.Settings.FirstOrDefaultAsync();
             if (settings == null)
             {
-                settings = new AppSettings();
+                settings = new AppSettings { Id = 1 };
                 _context.Settings.Add(settings);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Created default settings record");
             }
             return settings;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting settings");
-            return new AppSettings();
+            _logger.LogError(ex, "Error getting settings, returning default settings");
+            return new AppSettings { Id = 1 };
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 
     public async Task SaveSettingsAsync(AppSettings settings)
     {
+        await _semaphore.WaitAsync();
         try
         {
             settings.UpdatedAt = DateTime.UtcNow;
@@ -49,6 +57,10 @@ public class SettingsService
         {
             _logger.LogError(ex, "Error saving settings");
             throw;
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 

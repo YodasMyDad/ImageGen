@@ -69,6 +69,9 @@ namespace ImageGenApp.Views
                 var settingsLogger = loggerFactory.CreateLogger<SettingsService>();
                 _settingsService = new SettingsService(_dbContext, settingsLogger);
 
+                // Ensure default settings exist
+                await _settingsService.GetSettingsAsync();
+
                 // Initialize the API client
                 await InitializeImageGenClient();
 
@@ -102,20 +105,34 @@ namespace ImageGenApp.Views
 
         private async void OnSettingsClicked(object sender, RoutedEventArgs e)
         {
-            var settingsDialog = new SettingsDialog(_settingsService!, _logger!);
-            var result = await settingsDialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary)
+            try
             {
-                // Reinitialize client with new settings
-                await InitializeImageGenClient();
-
-                // Hide API key warning if key is now set
-                var apiKey = await _settingsService!.GetApiKeyAsync();
-                if (!string.IsNullOrWhiteSpace(apiKey))
+                if (_settingsService == null || _logger == null)
                 {
-                    ApiKeyWarning.Visibility = Visibility.Collapsed;
+                    await ShowErrorDialog("Error", "Application is not fully initialized. Please restart the application.");
+                    return;
                 }
+
+                var settingsDialog = new SettingsDialog(_settingsService, _logger, this.XamlRoot);
+                var result = await settingsDialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    // Reinitialize client with new settings
+                    await InitializeImageGenClient();
+
+                    // Hide API key warning if key is now set
+                    var apiKey = await _settingsService.GetApiKeyAsync();
+                    if (!string.IsNullOrWhiteSpace(apiKey))
+                    {
+                        ApiKeyWarning.Visibility = Visibility.Collapsed;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorDialog("Settings Error", $"Failed to open settings: {ex.Message}");
+                _logger?.LogError(ex, "Error opening settings dialog");
             }
         }
 
@@ -389,6 +406,11 @@ namespace ImageGenApp.Views
         }
 
         ~MainPage()
+        {
+            CleanupResources();
+        }
+
+        private void MainPage_Unloaded(object sender, RoutedEventArgs e)
         {
             CleanupResources();
         }

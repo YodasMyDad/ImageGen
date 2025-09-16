@@ -10,14 +10,28 @@ public sealed partial class SettingsDialog : ContentDialog
     private readonly SettingsService _settingsService;
     private readonly ILogger _logger;
 
-    public SettingsDialog(SettingsService settingsService, ILogger logger)
+    public SettingsDialog(SettingsService settingsService, ILogger logger, Microsoft.UI.Xaml.XamlRoot xamlRoot)
     {
         this.InitializeComponent();
         _settingsService = settingsService;
         _logger = logger;
+        this.XamlRoot = xamlRoot;
 
-        // Load current settings
-        _ = LoadSettingsAsync();
+        // Load current settings asynchronously
+        Loaded += OnLoaded;
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load settings in dialog");
+            await ShowErrorDialog("Load Error", $"Failed to load settings: {ex.Message}");
+        }
     }
 
     private async Task LoadSettingsAsync()
