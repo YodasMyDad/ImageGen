@@ -86,7 +86,7 @@ public class AddLogoModel(IImageGenClient imageClient, IWebHostEnvironment envir
             _ => "medium (15% of image width)"
         };
 
-        Prompt = $"The first image is the background. The second image is the logo. Place the logo over the background in the {positionText}. Make the logo {sizeText}. Blend it naturally and ensure it looks professional.";
+        Prompt = $"The first image is the background. The second image is the logo. Place the logo over the background in the {positionText}. Make the logo {sizeText}. Ensure the logo has a small margin so it shows in full without being cut off. Blend it naturally and ensure it looks professional.";
 
         return Page();
     }

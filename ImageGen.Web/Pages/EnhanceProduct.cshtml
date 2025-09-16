@@ -31,38 +31,62 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <div class="card shadow">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-upload"></i> Upload Product Image
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="post" enctype="multipart/form-data" id="uploadForm">
-                            <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
-                            <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
-
-                            <div class="upload-zone mb-3" id="uploadZone">
-                                <div id="uploadZoneContent">
-                                    <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
-                                    <h5>Drag & drop a product image here</h5>
-                                    <p class="text-muted">or click to browse files</p>
-                                    <button type="button" class="btn btn-info" onclick="document.getElementById('imageFile').click()">
-                                        <i class="bi bi-folder"></i> Choose File
-                                    </button>
+                @if (string.IsNullOrEmpty(Model.OriginalImageUrl))
+                {
+                    <!-- Step 1: Upload -->
+                    <div class="card shadow">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-upload"></i> Step 1: Upload Product Image
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                                <div class="upload-zone mb-3" id="uploadZone">
+                                    <div id="uploadZoneContent">
+                                        <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                                        <h5>Drag & drop a product image here</h5>
+                                        <p class="text-muted">or click to browse files</p>
+                                        <button type="button" class="btn btn-info" onclick="document.getElementById('imageFile').click()">
+                                            <i class="bi bi-folder"></i> Choose File
+                                        </button>
+                                    </div>
+                                    <input type="file" name="imageFile" id="imageFile" accept="image/*" class="d-none" required>
                                 </div>
-                                <input type="file" name="imageFile" id="imageFile" accept="image/*" class="d-none" required>
-                            </div>
 
+                                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                                {
+                                    <div class="alert alert-danger">
+                                        <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
+                                    </div>
+                                }
+
+                                <button type="submit" class="btn btn-info w-100" asp-page-handler="Upload">
+                                    <i class="bi bi-upload"></i> Upload Image
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Step 2: Configure Enhancement -->
+                    <div class="card shadow">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear"></i> Step 2: Configure Enhancement
+                            </h5>
+                        </div>
+                        <div class="card-body">
                             <div class="mb-3">
                                 <label for="enhancementType" class="form-label">Enhancement Type</label>
-                                <select class="form-select" id="enhancementType" name="enhancementType">
-                                    <option value="lighting">Professional Lighting</option>
-                                    <option value="details">Enhanced Details & Sharpness</option>
-                                    <option value="studio">Studio Quality Retouch</option>
-                                    <option value="colors">Vivid Colors & Contrast</option>
-                                    <option value="texture">Enhanced Textures</option>
-                                    <option value="all">Complete Enhancement</option>
+                                <select class="form-select" id="enhancementType">
+                                    <option value="lighting" selected="@(Model.EnhancementType == "lighting")">Professional Lighting</option>
+                                    <option value="details" selected="@(Model.EnhancementType == "details")">Enhanced Details & Sharpness</option>
+                                    <option value="studio" selected="@(Model.EnhancementType == "studio")">Studio Quality Retouch</option>
+                                    <option value="colors" selected="@(Model.EnhancementType == "colors")">Vivid Colors & Contrast</option>
+                                    <option value="texture" selected="@(Model.EnhancementType == "texture")">Enhanced Textures</option>
+                                    <option value="all" selected="@(Model.EnhancementType == "all")">Complete Enhancement</option>
                                 </select>
                             </div>
 
@@ -71,41 +95,34 @@
                                 <textarea name="prompt" id="prompt" class="form-control" rows="3" placeholder="Enter your prompt for enhancement">@Model.Prompt</textarea>
                             </div>
 
-                            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-                            {
-                                <div class="alert alert-danger">
-                                    <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
-                                </div>
-                            }
+                            <form method="post">
+                                <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
+                                <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
+                                <input type="hidden" name="enhancementType" id="selectedEnhancementType" value="@Model.EnhancementType" />
+                                <input type="hidden" name="prompt" id="finalPrompt" value="@Model.Prompt" />
 
-                            @if (Model.OriginalImageUrl != null)
-                            {
-                                <div class="alert alert-success">
-                                    <i class="bi bi-check-circle"></i> Image uploaded successfully! Click "Enhance Product" to process.
-                                </div>
-                            }
-
-                            <button type="submit" class="btn btn-info w-100" asp-page-handler="Upload">
-                                <i class="bi bi-upload"></i> Upload Image
-                            </button>
-                        </form>
+                                <button type="submit" class="btn btn-info w-100" asp-page-handler="Process">
+                                    <i class="bi bi-magic"></i> Enhance Product
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
 
             <div class="col-lg-6">
                 <div class="card shadow">
                     <div class="card-header bg-primary text-white">
                         <h5 class="card-title mb-0">
-                            <i class="bi bi-image"></i> Enhanced Result
+                            <i class="bi bi-image"></i> @if (string.IsNullOrEmpty(Model.ProcessedImageUrl)) { <text>Preview</text> } else { <text>Enhanced Result</text> }
                         </h5>
                     </div>
                     <div class="card-body text-center">
                         @if (Model.OriginalImageUrl != null)
                         {
                             <div class="mb-4">
-                                <h6>Original Product</h6>
-                                <img src="@Model.OriginalImageUrl" alt="Original" class="image-preview mb-3" style="max-height: 200px;">
+                                <h6>Your Product</h6>
+                                <img src="@Model.OriginalImageUrl" alt="Original" class="image-preview mb-3" style="max-height: 250px;">
                             </div>
                         }
 
@@ -113,37 +130,30 @@
                         {
                             <div class="mb-4">
                                 <h6>Enhanced Product</h6>
-                                <img src="@Model.ProcessedImageUrl" alt="Enhanced" class="image-preview mb-3" style="max-height: 300px;">
+                                <img src="@Model.ProcessedImageUrl" alt="Enhanced" class="image-preview mb-3" style="max-height: 250px;">
                             </div>
 
                             <div class="d-flex gap-2 justify-content-center">
                                 <a href="@Model.ProcessedImageUrl" class="btn btn-primary" download>
                                     <i class="bi bi-download"></i> Download
                                 </a>
-                                <button class="btn btn-outline-info" onclick="location.reload()">
+                                <a href="@Url.Page("EnhanceProduct")" class="btn btn-outline-info">
                                     <i class="bi bi-arrow-clockwise"></i> Try Another
-                                </button>
+                                </a>
                             </div>
                         }
-                        else if (Model.OriginalImageUrl != null)
+                        else if (string.IsNullOrEmpty(Model.OriginalImageUrl))
                         {
-                            <div class="text-center py-5">
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
-                                    <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
-                                    <input type="hidden" name="enhancementType" value="@Model.EnhancementType" />
-
-                                    <button type="submit" class="btn btn-info" asp-page-handler="Process">
-                                        <i class="bi bi-magic"></i> Enhance Product
-                                    </button>
-                                </form>
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-image display-4 mb-3"></i>
+                                <p>Upload a product image to see the preview</p>
                             </div>
                         }
                         else
                         {
-                            <div class="text-center py-5 text-muted">
-                                <i class="bi bi-image display-4 mb-3"></i>
-                                <p>Upload a product image to see the enhancement result</p>
+                            <div class="text-center py-3 text-muted">
+                                <i class="bi bi-magic display-4 mb-3 text-info"></i>
+                                <p>Configure your enhancement options and click "Enhance Product" to process</p>
                             </div>
                         }
                     </div>
@@ -217,40 +227,101 @@
 
 @section Scripts {
     <script>
-        // Drag and drop functionality
-        const uploadZone = document.getElementById('uploadZone');
-        const uploadZoneContent = document.getElementById('uploadZoneContent');
-        const fileInput = document.getElementById('imageFile');
+        // Enhancement type prompts
+        const enhancementPrompts = {
+            'lighting': 'Improve the lighting to be professional and studio-quality. Add proper shadows, highlights, and even illumination. Make the product look professionally photographed.',
+            'details': 'Enhance sharpness and details. Make fine textures and product features more visible and crisp. Improve overall image clarity and definition.',
+            'studio': 'Apply complete professional studio retouching. Fix any imperfections, improve colors, enhance lighting, and make the product look like a high-end catalog photo.',
+            'colors': 'Enhance colors and contrast. Make colors more vivid and appealing. Improve color balance and saturation for better visual impact.',
+            'texture': 'Enhance material textures and surface details. Make fabrics, metals, woods, or other materials look more realistic and tactile.',
+            'all': 'Apply complete professional enhancement: improve lighting, enhance details and sharpness, boost colors, enhance textures, and apply studio-quality retouching. Make this look like a premium product photograph.'
+        };
 
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
+        function updatePrompt() {
+            const enhancementTypeSelect = document.getElementById('enhancementType');
+            const promptTextarea = document.getElementById('prompt');
+            const selectedType = enhancementTypeSelect.value;
 
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                // Update content without destroying the file input
-                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                               <h5>File selected: ${files[0].name}</h5>
-                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
+            if (promptTextarea && enhancementPrompts[selectedType]) {
+                promptTextarea.value = enhancementPrompts[selectedType];
+                // Update hidden field for form submission
+                const hiddenTypeField = document.getElementById('selectedEnhancementType');
+                const hiddenPromptField = document.getElementById('finalPrompt');
+                if (hiddenTypeField) hiddenTypeField.value = selectedType;
+                if (hiddenPromptField) hiddenPromptField.value = promptTextarea.value;
             }
-        });
+        }
 
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                               <h5>File selected: ${file.name}</h5>
-                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
+        function updateHiddenFields() {
+            const enhancementTypeSelect = document.getElementById('enhancementType');
+            const promptTextarea = document.getElementById('prompt');
+            const hiddenTypeField = document.getElementById('selectedEnhancementType');
+            const hiddenPromptField = document.getElementById('finalPrompt');
+
+            if (hiddenTypeField && enhancementTypeSelect) {
+                hiddenTypeField.value = enhancementTypeSelect.value;
+            }
+            if (hiddenPromptField && promptTextarea) {
+                hiddenPromptField.value = promptTextarea.value;
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const enhancementTypeSelect = document.getElementById('enhancementType');
+            const promptTextarea = document.getElementById('prompt');
+
+            if (enhancementTypeSelect) {
+                enhancementTypeSelect.addEventListener('change', updatePrompt);
+
+                // Update hidden fields when prompt changes
+                if (promptTextarea) {
+                    promptTextarea.addEventListener('input', updateHiddenFields);
+                }
+
+                // Set initial prompt
+                updatePrompt();
+            }
+
+            // Drag and drop functionality (only if upload zone exists)
+            const uploadZone = document.getElementById('uploadZone');
+            if (uploadZone) {
+                const uploadZoneContent = document.getElementById('uploadZoneContent');
+                const fileInput = document.getElementById('imageFile');
+
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        // Update content without destroying the file input
+                        uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                                       <h5>File selected: ${files[0].name}</h5>
+                                                       <p class="text-muted">Click "Upload Image" to continue</p>`;
+                    }
+                });
+
+                if (fileInput) {
+                    fileInput.addEventListener('change', () => {
+                        if (fileInput.files.length > 0) {
+                            const file = fileInput.files[0];
+                            uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                                           <h5>File selected: ${file.name}</h5>
+                                                           <p class="text-muted">Click "Upload Image" to continue</p>`;
+                        }
+                    });
+                }
             }
         });
     </script>

@@ -64,7 +64,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Position</label>
-                                <select name="position" class="form-select">
+                                <select name="position" class="form-select" id="positionSelect">
                                     <option value="bottom-right" selected>Bottom Right</option>
                                     <option value="bottom-left">Bottom Left</option>
                                     <option value="top-right">Top Right</option>
@@ -75,7 +75,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Size</label>
-                                <select name="size" class="form-select">
+                                <select name="size" class="form-select" id="sizeSelect">
                                     <option value="small">Small (10%)</option>
                                     <option value="medium" selected>Medium (15%)</option>
                                     <option value="large">Large (20%)</option>
@@ -109,3 +109,46 @@
 
     }
 </div>
+
+@section Scripts {
+    <script>
+        function updatePrompt() {
+            const positionSelect = document.getElementById('positionSelect');
+            const sizeSelect = document.getElementById('sizeSelect');
+            const promptTextarea = document.getElementById('prompt');
+
+            const position = positionSelect.value;
+            const size = sizeSelect.value;
+
+            const positionText = {
+                'bottom-right': 'bottom right corner',
+                'bottom-left': 'bottom left corner',
+                'top-right': 'top right corner',
+                'top-left': 'top left corner',
+                'center': 'center'
+            }[position] || 'bottom right corner';
+
+            const sizeText = {
+                'small': 'small (10% of image width)',
+                'medium': 'medium (15% of image width)',
+                'large': 'large (20% of image width)',
+                'xlarge': 'extra large (25% of image width)'
+            }[size] || 'medium (15% of image width)';
+
+            const prompt = `The first image is the background. The second image is the logo. Place the logo over the background in the ${positionText}. Make the logo ${sizeText}. Ensure the logo has a small margin so it shows in full without being cut off. Blend it naturally and ensure it looks professional.`;
+
+            promptTextarea.value = prompt;
+        }
+
+        // Update prompt when dropdowns change
+        document.getElementById('positionSelect').addEventListener('change', updatePrompt);
+        document.getElementById('sizeSelect').addEventListener('change', updatePrompt);
+
+        // Update prompt on page load if we have values
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('positionSelect') && document.getElementById('sizeSelect')) {
+                updatePrompt();
+            }
+        });
+    </script>
+}

@@ -20,7 +20,7 @@ public class EnhanceProductModel : PageModel
     public IFormFile? ImageFile { get; set; }
 
     [BindProperty]
-    public string? EnhancementType { get; set; }
+    public string? EnhancementType { get; set; } = "lighting";
 
     [BindProperty]
     public string? OriginalImageUrl { get; set; }
@@ -79,8 +79,7 @@ public class EnhanceProductModel : PageModel
         OriginalImageUrl = $"/images/{fileName}";
         EnhancementType ??= "lighting";
 
-        // Set default prompt based on enhancement type
-        Prompt = EnhancementPrompts.GetValueOrDefault(EnhancementType, "Enhance this product photo with professional quality improvements");
+        // Don't set prompt here - it will be set in Step 2 based on dropdown selection
 
         return Page();
     }

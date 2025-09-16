@@ -31,38 +31,62 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-upload"></i> Upload Product Image
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="post" enctype="multipart/form-data" id="uploadForm">
-                            <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
-                            <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
-
-                            <div class="upload-zone mb-3" id="uploadZone">
-                                <div id="uploadZoneContent">
-                                    <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
-                                    <h5>Drag & drop a product image here</h5>
-                                    <p class="text-muted">or click to browse files</p>
-                                    <button type="button" class="btn btn-success" onclick="document.getElementById('imageFile').click()">
-                                        <i class="bi bi-folder"></i> Choose File
-                                    </button>
+                @if (string.IsNullOrEmpty(Model.OriginalImageUrl))
+                {
+                    <!-- Step 1: Upload -->
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-upload"></i> Step 1: Upload Product Image
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                                <div class="upload-zone mb-3" id="uploadZone">
+                                    <div id="uploadZoneContent">
+                                        <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                                        <h5>Drag & drop a product image here</h5>
+                                        <p class="text-muted">or click to browse files</p>
+                                        <button type="button" class="btn btn-success" onclick="document.getElementById('imageFile').click()">
+                                            <i class="bi bi-folder"></i> Choose File
+                                        </button>
+                                    </div>
+                                    <input type="file" name="imageFile" id="imageFile" accept="image/*" class="d-none" required>
                                 </div>
-                                <input type="file" name="imageFile" id="imageFile" accept="image/*" class="d-none" required>
-                            </div>
 
+                                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                                {
+                                    <div class="alert alert-danger">
+                                        <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
+                                    </div>
+                                }
+
+                                <button type="submit" class="btn btn-success w-100" asp-page-handler="Upload">
+                                    <i class="bi bi-upload"></i> Upload Image
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Step 2: Configure Background -->
+                    <div class="card shadow">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear"></i> Step 2: Configure Background
+                            </h5>
+                        </div>
+                        <div class="card-body">
                             <div class="mb-3">
                                 <label for="backgroundStyle" class="form-label">Background Style</label>
-                                <select class="form-select" id="backgroundStyle" name="backgroundStyle">
-                                    <option value="studio">Professional Studio (White)</option>
-                                    <option value="gradient">Gradient Background</option>
-                                    <option value="nature">Natural Outdoor Scene</option>
-                                    <option value="urban">Urban Environment</option>
-                                    <option value="luxury">Luxury Setting</option>
-                                    <option value="minimal">Minimalist Design</option>
+                                <select class="form-select" id="backgroundStyle">
+                                    <option value="studio" selected="@(Model.BackgroundStyle == "studio")">Professional Studio (White)</option>
+                                    <option value="gradient" selected="@(Model.BackgroundStyle == "gradient")">Gradient Background</option>
+                                    <option value="nature" selected="@(Model.BackgroundStyle == "nature")">Natural Outdoor Scene</option>
+                                    <option value="urban" selected="@(Model.BackgroundStyle == "urban")">Urban Environment</option>
+                                    <option value="luxury" selected="@(Model.BackgroundStyle == "luxury")">Luxury Setting</option>
+                                    <option value="minimal" selected="@(Model.BackgroundStyle == "minimal")">Minimalist Design</option>
                                 </select>
                             </div>
 
@@ -71,79 +95,65 @@
                                 <textarea name="prompt" id="prompt" class="form-control" rows="3" placeholder="Enter your prompt for background change">@Model.Prompt</textarea>
                             </div>
 
-                            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-                            {
-                                <div class="alert alert-danger">
-                                    <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
-                                </div>
-                            }
+                            <form method="post">
+                                <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
+                                <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
+                                <input type="hidden" name="backgroundStyle" id="selectedBackgroundStyle" value="@Model.BackgroundStyle" />
+                                <input type="hidden" name="prompt" id="finalPrompt" value="@Model.Prompt" />
 
-                            @if (Model.OriginalImageUrl != null)
-                            {
-                                <div class="alert alert-success">
-                                    <i class="bi bi-check-circle"></i> Image uploaded successfully! Click "Change Background" to process.
-                                </div>
-                            }
-
-                            <button type="submit" class="btn btn-success w-100" asp-page-handler="Upload">
-                                <i class="bi bi-upload"></i> Upload Image
-                            </button>
-                        </form>
+                                <button type="submit" class="btn btn-success w-100" asp-page-handler="Process">
+                                    <i class="bi bi-magic"></i> Change Background
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
 
             <div class="col-lg-6">
                 <div class="card shadow">
                     <div class="card-header bg-primary text-white">
                         <h5 class="card-title mb-0">
-                            <i class="bi bi-image"></i> Result
+                            <i class="bi bi-image"></i> @if (string.IsNullOrEmpty(Model.ProcessedImageUrl)) { <text>Preview</text> } else { <text>Result</text> }
                         </h5>
                     </div>
                     <div class="card-body text-center">
                         @if (Model.OriginalImageUrl != null)
                         {
                             <div class="mb-4">
-                                <h6>Original Product</h6>
-                                <img src="@Model.OriginalImageUrl" alt="Original" class="image-preview mb-3" style="max-height: 200px;">
+                                <h6>Your Product</h6>
+                                <img src="@Model.OriginalImageUrl" alt="Original" class="image-preview mb-3" style="max-height: 250px;">
                             </div>
                         }
 
                         @if (Model.ProcessedImageUrl != null)
                         {
                             <div class="mb-4">
-                                <h6>New Background</h6>
-                                <img src="@Model.ProcessedImageUrl" alt="Background Changed" class="image-preview mb-3" style="max-height: 300px;">
+                                <h6>New Background Applied</h6>
+                                <img src="@Model.ProcessedImageUrl" alt="Background Changed" class="image-preview mb-3" style="max-height: 250px;">
                             </div>
 
                             <div class="d-flex gap-2 justify-content-center">
                                 <a href="@Model.ProcessedImageUrl" class="btn btn-primary" download>
                                     <i class="bi bi-download"></i> Download
                                 </a>
-                                <button class="btn btn-outline-success" onclick="location.reload()">
+                                <a href="@Url.Page("ChangeBackground")" class="btn btn-outline-success">
                                     <i class="bi bi-arrow-clockwise"></i> Try Another
-                                </button>
+                                </a>
                             </div>
                         }
-                        else if (Model.OriginalImageUrl != null)
+                        else if (string.IsNullOrEmpty(Model.OriginalImageUrl))
                         {
-                            <div class="text-center py-5">
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="originalImageUrl" value="@Model.OriginalImageUrl" />
-                                    <input type="hidden" name="processedImageUrl" value="@Model.ProcessedImageUrl" />
-                                    <input type="hidden" name="backgroundStyle" value="@Model.BackgroundStyle" />
-
-                                    <button type="submit" class="btn btn-success" asp-page-handler="Process">
-                                        <i class="bi bi-magic"></i> Change Background
-                                    </button>
-                                </form>
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-image display-4 mb-3"></i>
+                                <p>Upload a product image to see the preview</p>
                             </div>
                         }
                         else
                         {
-                            <div class="text-center py-5 text-muted">
-                                <i class="bi bi-image display-4 mb-3"></i>
-                                <p>Upload a product image to see the background change result</p>
+                            <div class="text-center py-3 text-muted">
+                                <i class="bi bi-magic display-4 mb-3 text-success"></i>
+                                <p>Configure your background options and click "Change Background" to process</p>
                             </div>
                         }
                     </div>
@@ -207,40 +217,101 @@
 
 @section Scripts {
     <script>
-        // Drag and drop functionality
-        const uploadZone = document.getElementById('uploadZone');
-        const uploadZoneContent = document.getElementById('uploadZoneContent');
-        const fileInput = document.getElementById('imageFile');
+        // Background style prompts
+        const backgroundPrompts = {
+            'studio': 'Place this product on a clean professional studio background with perfect white lighting and subtle shadows',
+            'gradient': 'Place this product on a modern gradient background with soft blue to purple colors, elegant and contemporary',
+            'nature': 'Place this product in a beautiful natural outdoor setting with soft greenery and natural lighting',
+            'urban': 'Place this product in a modern urban environment with city architecture and contemporary design',
+            'luxury': 'Place this product in an elegant luxury setting with marble surfaces, gold accents, and sophisticated lighting',
+            'minimal': 'Place this product on a clean minimalist background with geometric shapes and neutral colors'
+        };
 
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
+        function updatePrompt() {
+            const backgroundStyleSelect = document.getElementById('backgroundStyle');
+            const promptTextarea = document.getElementById('prompt');
+            const selectedStyle = backgroundStyleSelect.value;
 
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                // Update content without destroying the file input
-                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                               <h5>File selected: ${files[0].name}</h5>
-                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
+            if (promptTextarea && backgroundPrompts[selectedStyle]) {
+                promptTextarea.value = backgroundPrompts[selectedStyle];
+                // Update hidden field for form submission
+                const hiddenStyleField = document.getElementById('selectedBackgroundStyle');
+                const hiddenPromptField = document.getElementById('finalPrompt');
+                if (hiddenStyleField) hiddenStyleField.value = selectedStyle;
+                if (hiddenPromptField) hiddenPromptField.value = promptTextarea.value;
             }
-        });
+        }
 
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
-                                               <h5>File selected: ${file.name}</h5>
-                                               <p class="text-muted">Click "Upload Image" to continue</p>`;
+        function updateHiddenFields() {
+            const backgroundStyleSelect = document.getElementById('backgroundStyle');
+            const promptTextarea = document.getElementById('prompt');
+            const hiddenStyleField = document.getElementById('selectedBackgroundStyle');
+            const hiddenPromptField = document.getElementById('finalPrompt');
+
+            if (hiddenStyleField && backgroundStyleSelect) {
+                hiddenStyleField.value = backgroundStyleSelect.value;
+            }
+            if (hiddenPromptField && promptTextarea) {
+                hiddenPromptField.value = promptTextarea.value;
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const backgroundStyleSelect = document.getElementById('backgroundStyle');
+            const promptTextarea = document.getElementById('prompt');
+
+            if (backgroundStyleSelect) {
+                backgroundStyleSelect.addEventListener('change', updatePrompt);
+
+                // Update hidden fields when prompt changes
+                if (promptTextarea) {
+                    promptTextarea.addEventListener('input', updateHiddenFields);
+                }
+
+                // Set initial prompt
+                updatePrompt();
+            }
+
+            // Drag and drop functionality (only if upload zone exists)
+            const uploadZone = document.getElementById('uploadZone');
+            if (uploadZone) {
+                const uploadZoneContent = document.getElementById('uploadZoneContent');
+                const fileInput = document.getElementById('imageFile');
+
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        // Update content without destroying the file input
+                        uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                                       <h5>File selected: ${files[0].name}</h5>
+                                                       <p class="text-muted">Click "Upload Image" to continue</p>`;
+                    }
+                });
+
+                if (fileInput) {
+                    fileInput.addEventListener('change', () => {
+                        if (fileInput.files.length > 0) {
+                            const file = fileInput.files[0];
+                            uploadZoneContent.innerHTML = `<i class="bi bi-file-earmark-image display-4 text-success mb-3"></i>
+                                                           <h5>File selected: ${file.name}</h5>
+                                                           <p class="text-muted">Click "Upload Image" to continue</p>`;
+                        }
+                    });
+                }
             }
         });
     </script>

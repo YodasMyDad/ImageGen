@@ -20,7 +20,7 @@ public class ChangeBackgroundModel : PageModel
     public IFormFile? ImageFile { get; set; }
 
     [BindProperty]
-    public string? BackgroundStyle { get; set; }
+    public string? BackgroundStyle { get; set; } = "studio";
 
     [BindProperty]
     public string? OriginalImageUrl { get; set; }
@@ -79,8 +79,7 @@ public class ChangeBackgroundModel : PageModel
         OriginalImageUrl = $"/images/{fileName}";
         BackgroundStyle ??= "studio";
 
-        // Set default prompt based on background style
-        Prompt = BackgroundPrompts.GetValueOrDefault(BackgroundStyle, "Place this product on a clean professional background");
+        // Don't set prompt here - it will be set in Step 2 based on dropdown selection
 
         return Page();
     }
