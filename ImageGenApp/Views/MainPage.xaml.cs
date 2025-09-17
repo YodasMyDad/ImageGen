@@ -290,7 +290,7 @@ namespace ImageGenApp.Views
 
             if (string.IsNullOrEmpty(_primaryImagePath))
             {
-                await ShowErrorDialog("Input Error", "Please upload a primary image first.");
+                await ShowErrorDialog("Input Error", "Please add a primary image first.");
                 return;
             }
 
@@ -303,7 +303,7 @@ namespace ImageGenApp.Views
             {
                 // Show loading overlay
                 LoadingOverlay.Visibility = Visibility.Visible;
-                LoadingText.Text = "Generating image...";
+                LoadingText.Text = "Please wait, this could take 60+ seconds";
                 GenerateButton.IsEnabled = false;
 
                 // Prepare the edit request
@@ -626,8 +626,7 @@ namespace ImageGenApp.Views
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(20),
-                Margin = new Thickness(0, 8, 0, 0),
-                Background = new SolidColorBrush(Microsoft.UI.Colors.White)
+                Margin = new Thickness(0, 8, 0, 0)
             };
 
             // Make the entire border clickable
@@ -635,42 +634,14 @@ namespace ImageGenApp.Views
 
             var stackPanel = new StackPanel { Spacing = 10 };
 
-            // Header with title and category
-            var headerGrid = new Grid();
-            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
             // Title
             var titleBlock = new TextBlock
             {
                 Text = template.Title,
                 FontSize = 16,
-                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
             };
-            Grid.SetColumn(titleBlock, 0);
-            headerGrid.Children.Add(titleBlock);
-
-            // Category badge
-            var categoryBadge = new Border
-            {
-                Background = new SolidColorBrush(Microsoft.UI.Colors.LightBlue),
-                CornerRadius = new CornerRadius(12),
-                Padding = new Thickness(10, 4, 10, 4),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            var categoryText = new TextBlock
-            {
-                Text = template.Category,
-                FontSize = 10,
-                FontWeight = Microsoft.UI.Text.FontWeights.Medium,
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.DarkBlue)
-            };
-            categoryBadge.Child = categoryText;
-            Grid.SetColumn(categoryBadge, 1);
-            headerGrid.Children.Add(categoryBadge);
-
-            stackPanel.Children.Add(headerGrid);
+            stackPanel.Children.Add(titleBlock);
 
             // Description
             if (!string.IsNullOrEmpty(template.Description))
@@ -737,9 +708,6 @@ namespace ImageGenApp.Views
 
                 // Close the templates panel
                 PromptTemplatesPanelOverlay.Visibility = Visibility.Collapsed;
-
-                // Show brief confirmation
-                await ShowInfoDialog("Template Applied", $"'{template.Title}' has been applied to your prompt!");
             }
             catch (Exception ex)
             {

@@ -55,14 +55,14 @@
                         <Border BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1" CornerRadius="4" MinHeight="200">
                             <Grid>
                                 <Image x:Name="PrimaryImage" Stretch="Uniform" Margin="10"/>
-                                <Button x:Name="UploadPrimaryButton" Content="📁 Upload Primary Image" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource Action}" Click="OnUploadPrimaryClicked" Visibility="Visible"/>
+                                <Button x:Name="UploadPrimaryButton" Content="📁 Add Primary Image" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource Action}" Click="OnUploadPrimaryClicked" Visibility="Visible"/>
                                 <Button x:Name="RemovePrimaryButton" Content="❌" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" Style="{StaticResource Action}" Background="Red" Foreground="White" Click="OnRemovePrimaryClicked" Visibility="Collapsed"/>
                             </Grid>
                         </Border>
 
                         <!-- Additional Images -->
                         <TextBlock Text="Additional Images (Optional)" FontSize="14" FontWeight="SemiBold"/>
-                        <Button x:Name="AddImageButton" Content="➕ Add Image" Style="{StaticResource Action}" Click="OnAddImageClicked"/>
+                        <Button x:Name="AddImageButton" Content="➕ Add Image" Style="{StaticResource Action}" Click="OnAddImageClicked" HorizontalAlignment="Stretch"/>
 
                         <ItemsControl x:Name="AdditionalImagesList">
                             <ItemsControl.ItemTemplate>
@@ -95,12 +95,12 @@
                         <TextBox x:Name="PromptTextBox" PlaceholderText="Describe what you want the AI to do with your image..." TextWrapping="Wrap" AcceptsReturn="True" Height="100" FontSize="14"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Button x:Name="GenerateButton" Grid.Column="0" Content="🚀 Generate" Style="{StaticResource PrimaryAction}" Click="OnGenerateClicked"/>
-                            <Button x:Name="ClearButton" Grid.Column="1" Content="🗑️ Clear" Style="{StaticResource Action}" Margin="10,0,0,0" Click="OnClearClicked"/>
+                            <Button x:Name="ClearButton" Grid.Column="0" Content="🗑️ Clear" Style="{StaticResource Action}" Click="OnClearClicked"/>
+                            <Button x:Name="GenerateButton" Grid.Column="2" Content="🚀 Generate" Style="{StaticResource PrimaryAction}" Click="OnGenerateClicked"/>
                         </Grid>
                     </StackPanel>
                 </Border>

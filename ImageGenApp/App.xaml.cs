@@ -72,6 +72,7 @@ namespace ImageGenApp
             }
 
             Window ??= new Window();
+            Window.Title = "ImageGen - AI Image Editing";
             Console.WriteLine("Window created");
 
             if (Window.Content is not Frame rootFrame)
