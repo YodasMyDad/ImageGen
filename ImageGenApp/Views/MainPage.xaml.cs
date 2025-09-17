@@ -681,7 +681,7 @@ namespace ImageGenApp.Views
                 Text = "💡 Click to use this prompt",
                 FontSize = 11,
                 FontStyle = Windows.UI.Text.FontStyle.Italic,
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.DarkBlue),
+                Foreground = App.Current.Resources["SystemControlForegroundBaseMediumBrush"] as SolidColorBrush,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Margin = new Thickness(0, -3, 0, 0)
             };
