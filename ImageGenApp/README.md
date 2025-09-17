@@ -41,7 +41,7 @@ A modern, clean desktop application for AI-powered image generation and editing 
 ### First Time Setup
 1. **Launch the Application**: The app will show an API key warning if no key is configured
 2. **Open Settings**: Click the ⚙️ Settings button in the top-right corner
-3. **Configure API Key**: Enter your ImageGen API key in the settings dialog
+3. **Configure API Key**: Enter your ImageGen API key in the settings panel
 4. **Set Preferences**: Choose your default quality, format, and fidelity settings
 5. **Save Settings**: Click "Save" to store your configuration
 
@@ -76,8 +76,7 @@ A modern, clean desktop application for AI-powered image generation and editing 
 - **API Integration**: ImageGen NuGet package for AI services
 
 ### Key Components
-- `MainPage.xaml/cs`: Main application interface and logic
-- `SettingsDialog.xaml/cs`: Configuration and preferences
+- `MainPage.xaml/cs`: Main application interface with inline settings panel
 - `SettingsService.cs`: Database operations and settings management
 - `AppDbContext.cs`: SQLite database context
 - `AppSettings.cs`: Settings data model
@@ -99,7 +98,7 @@ A modern, clean desktop application for AI-powered image generation and editing 
 
 ### API Key Setup
 1. Obtain an API key from your ImageGen service provider
-2. Open the settings dialog (⚙️ button)
+2. Open the settings panel (⚙️ button)
 3. Enter your API key in the "API Configuration" section
 4. Click "Save" to store the key securely
 

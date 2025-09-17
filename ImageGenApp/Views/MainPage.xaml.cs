@@ -3,14 +3,12 @@ using ImageGen.Models;
 using ImageGen.Configuration;
 using ImageGenApp.Models;
 using ImageGenApp.Services;
-using ImageGenApp.Dialogs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -25,6 +23,7 @@ namespace ImageGenApp.Views
 {
     /// <summary>
     /// Modern main page for AI Image Generation with WinUI 3.
+    /// Implements theme-aware UI with simplified, maintainable code.
     /// </summary>
     public sealed partial class MainPage : Page
     {
@@ -299,54 +298,15 @@ namespace ImageGenApp.Views
 
         private async Task GenerateImageAsync()
         {
+            SetLoadingState(true);
+
             try
             {
-                // Show loading overlay
-                LoadingOverlay.Visibility = Visibility.Visible;
-                LoadingText.Text = "Please wait, this could take 60+ seconds";
-                GenerateButton.IsEnabled = false;
-
-                // Prepare the edit request
-                var settings = await _settingsService!.GetSettingsAsync();
-                var primaryStream = File.OpenRead(_primaryImagePath!);
-
-                var request = new EditRequest(primaryStream, PromptTextBox.Text.Trim())
-                {
-                    Quality = settings.DefaultQuality,
-                    Format = settings.DefaultFormat,
-                    InputFidelity = settings.DefaultFidelity,
-                    SecondaryImages = _additionalImages.Any()
-                        ? _additionalImages.Select(img => File.OpenRead(img.FilePath)).ToArray()
-                        : null
-                };
-
-                // Generate the image
+                var request = await CreateEditRequest();
                 var result = await _imageGenClient!.EditAsync(request, CancellationToken.None);
-                _currentResult = result;
-
-                // Update UI with result
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    // Hide the placeholder overlay
-                    ResultPlaceholder.Visibility = Visibility.Collapsed;
-
-                    var bitmapImage = new BitmapImage();
-                    using (var stream = new MemoryStream(result.Bytes.ToArray()))
-                    {
-                        bitmapImage.SetSource(stream.AsRandomAccessStream());
-                    }
-                    ResultImage.Source = bitmapImage;
-
-                    // Enable action buttons
-                    DownloadButton.IsEnabled = true;
-                    CopyPromptButton.IsEnabled = true;
-                });
-
-                primaryStream.Dispose();
-                foreach (var stream in request.SecondaryImages ?? [])
-                {
-                    stream.Dispose();
-                }
+                
+                UpdateResultUI(result);
+                DisposeRequest(request);
             }
             catch (Exception ex)
             {
@@ -354,9 +314,64 @@ namespace ImageGenApp.Views
             }
             finally
             {
-                // Hide loading overlay
-                LoadingOverlay.Visibility = Visibility.Collapsed;
-                GenerateButton.IsEnabled = true;
+                SetLoadingState(false);
+            }
+        }
+
+        private void SetLoadingState(bool isLoading)
+        {
+            LoadingOverlay.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
+            GenerateButton.IsEnabled = !isLoading;
+            
+            if (isLoading)
+            {
+                LoadingText.Text = "Please wait, this could take 60+ seconds";
+            }
+        }
+
+        private async Task<EditRequest> CreateEditRequest()
+        {
+            var settings = await _settingsService!.GetSettingsAsync();
+            var primaryStream = File.OpenRead(_primaryImagePath!);
+
+            return new EditRequest(primaryStream, PromptTextBox.Text.Trim())
+            {
+                Quality = settings.DefaultQuality,
+                Format = settings.DefaultFormat,
+                InputFidelity = settings.DefaultFidelity,
+                SecondaryImages = _additionalImages.Any()
+                    ? _additionalImages.Select(img => File.OpenRead(img.FilePath)).ToArray()
+                    : null
+            };
+        }
+
+        private void UpdateResultUI(ImageResult result)
+        {
+            _currentResult = result;
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                ResultPlaceholder.Visibility = Visibility.Collapsed;
+                
+                var bitmapImage = new BitmapImage();
+                using var stream = new MemoryStream(result.Bytes.ToArray());
+                bitmapImage.SetSource(stream.AsRandomAccessStream());
+                ResultImage.Source = bitmapImage;
+
+                DownloadButton.IsEnabled = true;
+                CopyPromptButton.IsEnabled = true;
+            });
+        }
+
+        private static void DisposeRequest(EditRequest request)
+        {
+            request.PrimaryImage?.Dispose();
+            if (request.SecondaryImages != null)
+            {
+                foreach (var stream in request.SecondaryImages)
+                {
+                    stream?.Dispose();
+                }
             }
         }
 
@@ -398,9 +413,7 @@ namespace ImageGenApp.Views
         {
             if (!string.IsNullOrWhiteSpace(PromptTextBox.Text))
             {
-                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-                dataPackage.SetText(PromptTextBox.Text);
-                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+                CopyToClipboard(PromptTextBox.Text);
                 await ShowInfoDialog("Success", "Prompt copied to clipboard!");
             }
         }
@@ -476,24 +489,22 @@ namespace ImageGenApp.Views
 
         private async Task ShowErrorDialog(string title, string message)
         {
-            var dialog = new ContentDialog
-            {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
-            await dialog.ShowAsync();
+            await ShowDialog(title, message, "❌");
         }
 
         private async Task ShowInfoDialog(string title, string message)
         {
+            await ShowDialog(title, message, "✅");
+        }
+        
+        private async Task ShowDialog(string title, string message, string icon)
+        {
             var dialog = new ContentDialog
             {
-                Title = title,
+                Title = $"{icon} {title}",
                 Content = message,
                 CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
+                XamlRoot = XamlRoot
             };
             await dialog.ShowAsync();
         }
@@ -506,11 +517,8 @@ namespace ImageGenApp.Views
             {
                 image.ImageStream?.Dispose();
             }
-        }
-
-        ~MainPage()
-        {
-            CleanupResources();
+            
+            _additionalImages.Clear();
         }
 
         private void MainPage_Unloaded(object sender, RoutedEventArgs e)
@@ -550,96 +558,113 @@ namespace ImageGenApp.Views
             TemplatesContainer.Children.Clear();
 
             var searchTerm = TemplateSearchBox.Text?.Trim();
-            var templates = string.IsNullOrEmpty(searchTerm) 
-                ? _promptTemplateService.GetCategories().SelectMany(c => c.Templates).ToList()
-                : _promptTemplateService.SearchTemplates(searchTerm).ToList();
-
+            
             if (string.IsNullOrEmpty(searchTerm))
             {
-                // Group by category
-                var categories = _promptTemplateService.GetCategories();
-                foreach (var category in categories)
-                {
-                    if (category.Templates.Any())
-                    {
-                        // Category header
-                        var categoryHeader = new TextBlock
-                        {
-                            Text = category.Name,
-                            FontSize = 16,
-                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                            Margin = new Thickness(0, 10, 0, 5)
-                        };
-                        TemplatesContainer.Children.Add(categoryHeader);
+                PopulateCategorizedTemplates();
+            }
+            else
+            {
+                PopulateSearchResults(searchTerm);
+            }
 
-                        // Templates in category
-                        foreach (var template in category.Templates)
-                        {
-                            var templateControl = CreateTemplateControl(template);
-                            TemplatesContainer.Children.Add(templateControl);
-                        }
-                    }
+            return Task.CompletedTask;
+        }
+
+        private void PopulateCategorizedTemplates()
+        {
+            var categories = _promptTemplateService!.GetCategories();
+            foreach (var category in categories.Where(c => c.Templates.Any()))
+            {
+                AddCategoryHeader(category.Name);
+                foreach (var template in category.Templates)
+                {
+                    TemplatesContainer.Children.Add(CreateTemplateControl(template));
+                }
+            }
+        }
+
+        private void PopulateSearchResults(string searchTerm)
+        {
+            var templates = _promptTemplateService!.SearchTemplates(searchTerm).ToList();
+            
+            if (templates.Any())
+            {
+                AddSearchHeader(templates.Count);
+                foreach (var template in templates)
+                {
+                    TemplatesContainer.Children.Add(CreateTemplateControl(template));
                 }
             }
             else
             {
-                // Search results
-                if (templates.Any())
-                {
-                    var searchHeader = new TextBlock
-                    {
-                        Text = $"Search Results ({templates.Count})",
-                        FontSize = 16,
-                        FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                        Margin = new Thickness(0, 0, 0, 10)
-                    };
-                    TemplatesContainer.Children.Add(searchHeader);
-
-                    foreach (var template in templates)
-                    {
-                        var templateControl = CreateTemplateControl(template);
-                        TemplatesContainer.Children.Add(templateControl);
-                    }
-                }
-                else
-                {
-                    var noResults = new TextBlock
-                    {
-                        Text = "No templates found matching your search.",
-                        FontStyle = Windows.UI.Text.FontStyle.Italic,
-                        Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        Margin = new Thickness(0, 20, 0, 0)
-                    };
-                    TemplatesContainer.Children.Add(noResults);
-                }
+                AddNoResultsMessage();
             }
+        }
 
-            return Task.CompletedTask;
+        private void AddCategoryHeader(string categoryName)
+        {
+            var categoryHeader = new TextBlock
+            {
+                Text = categoryName,
+                FontSize = 16,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Margin = new Thickness(0, 10, 0, 5),
+                Foreground = GetThemeResource<Brush>("TextFillColorPrimaryBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Black)
+            };
+            TemplatesContainer.Children.Add(categoryHeader);
+        }
+
+        private void AddSearchHeader(int count)
+        {
+            var searchHeader = new TextBlock
+            {
+                Text = $"Search Results ({count})",
+                FontSize = 16,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 0, 10),
+                Foreground = GetThemeResource<Brush>("TextFillColorPrimaryBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Black)
+            };
+            TemplatesContainer.Children.Add(searchHeader);
+        }
+
+        private void AddNoResultsMessage()
+        {
+            var noResults = new TextBlock
+            {
+                Text = "No templates found matching your search.",
+                FontSize = 12,
+                FontStyle = Windows.UI.Text.FontStyle.Italic,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 20, 0, 0),
+                Foreground = GetThemeResource<Brush>("TextFillColorSecondaryBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Gray)
+            };
+            TemplatesContainer.Children.Add(noResults);
         }
 
         private Border CreateTemplateControl(PromptTemplate template)
         {
             var border = new Border
             {
-                BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                BorderBrush = GetThemeResource<Brush>("CardStrokeColorDefaultBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Gray),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(6),
-                Padding = new Thickness(20),
+                Background = GetThemeResource<Brush>("CardBackgroundFillColorDefaultBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.White),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(16),
                 Margin = new Thickness(0, 8, 0, 0)
             };
-
-            // Make the entire border clickable
+            
             border.Tapped += async (s, e) => await OnTemplateClicked(template);
 
             var stackPanel = new StackPanel { Spacing = 10 };
 
             // Title
-            var titleBlock = new TextBlock
-            {
+            var titleBlock = new TextBlock 
+            { 
                 Text = template.Title,
                 FontSize = 16,
-                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Foreground = GetThemeResource<Brush>("TextFillColorPrimaryBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Black)
             };
             stackPanel.Children.Add(titleBlock);
 
@@ -649,10 +674,10 @@ namespace ImageGenApp.Views
                 var descriptionBlock = new TextBlock
                 {
                     Text = template.Description,
-                    FontSize = 13,
-                    Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                    FontSize = 12,
                     TextWrapping = TextWrapping.Wrap,
-                    Margin = new Thickness(0, -5, 0, 0)
+                    Margin = new Thickness(0, -5, 0, 0),
+                    Foreground = GetThemeResource<Brush>("TextFillColorSecondaryBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Gray)
                 };
                 stackPanel.Children.Add(descriptionBlock);
             }
@@ -660,17 +685,18 @@ namespace ImageGenApp.Views
             // Full prompt text with background
             var promptBorder = new Border
             {
-                Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray),
-                Padding = new Thickness(12, 8, 12, 8),
-                CornerRadius = new CornerRadius(4)
+                Background = GetThemeResource<Brush>("SystemControlAcrylicElementBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.LightGray),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(12, 8, 12, 8)
             };
+            
             var promptBlock = new TextBlock
             {
                 Text = template.Prompt,
                 FontSize = 12,
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.DarkSlateGray),
                 TextWrapping = TextWrapping.Wrap,
-                LineHeight = 18
+                LineHeight = 18,
+                Foreground = GetThemeResource<Brush>("TextFillColorSecondaryBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Gray)
             };
             promptBorder.Child = promptBlock;
             stackPanel.Children.Add(promptBorder);
@@ -681,38 +707,47 @@ namespace ImageGenApp.Views
                 Text = "💡 Click to use this prompt",
                 FontSize = 11,
                 FontStyle = Windows.UI.Text.FontStyle.Italic,
-                Foreground = App.Current.Resources["SystemControlForegroundBaseMediumBrush"] as SolidColorBrush,
                 HorizontalAlignment = HorizontalAlignment.Right,
-                Margin = new Thickness(0, -3, 0, 0)
+                Margin = new Thickness(0, -3, 0, 0),
+                Foreground = GetThemeResource<Brush>("TextFillColorSecondaryBrush") ?? new SolidColorBrush(Microsoft.UI.Colors.Gray)
             };
             stackPanel.Children.Add(instructionBlock);
 
             border.Child = stackPanel;
             return border;
         }
+        
+        private T? GetThemeResource<T>(string resourceKey) where T : class
+        {
+            try
+            {
+                return Application.Current.Resources[resourceKey] as T;
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         private async Task OnTemplateClicked(PromptTemplate template)
         {
             try
             {
-                // Copy to clipboard
-                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-                dataPackage.SetText(template.Prompt);
-                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
-
-                // Insert into the prompt textbox
-                if (PromptTextBox != null)
-                {
-                    PromptTextBox.Text = template.Prompt;
-                }
-
-                // Close the templates panel
+                CopyToClipboard(template.Prompt);
+                PromptTextBox.Text = template.Prompt;
                 PromptTemplatesPanelOverlay.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
                 await ShowErrorDialog("Template Error", $"Failed to apply template: {ex.Message}");
             }
+        }
+        
+        private static void CopyToClipboard(string text)
+        {
+            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+            dataPackage.SetText(text);
+            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
         }
 
         private void OnTemplateSearchTextChanged(object sender, TextChangedEventArgs e)

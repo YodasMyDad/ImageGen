@@ -11,40 +11,93 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
-            <Color x:Key="Primary">#512BD4</Color>
+            
+            <!-- Theme-aware colors -->
+            <Color x:Key="AppPrimaryLight">#512BD4</Color>
+            <Color x:Key="AppPrimaryDark">#7C3AED</Color>
+            
+            <!-- Theme-aware brushes -->
+            <SolidColorBrush x:Key="AppPrimaryBrush" Color="{StaticResource AppPrimaryLight}" />
+            <SolidColorBrush x:Key="AppPrimaryBrushDark" Color="{StaticResource AppPrimaryDark}" />
+            
+            <!-- Typography -->
+            <x:Double x:Key="AppFontSizeSmall">12</x:Double>
+            <x:Double x:Key="AppFontSizeNormal">14</x:Double>
+            <x:Double x:Key="AppFontSizeLarge">16</x:Double>
+            <x:Double x:Key="AppFontSizeXLarge">20</x:Double>
+            
+            <!-- Spacing -->
+            <x:Double x:Key="AppSpacingSmall">8</x:Double>
+            <x:Double x:Key="AppSpacingNormal">16</x:Double>
+            <x:Double x:Key="AppSpacingLarge">24</x:Double>
+            
+            <!-- Thickness resources -->
+            <Thickness x:Key="AppPaddingSmall">8</Thickness>
+            <Thickness x:Key="AppPaddingNormal">16</Thickness>
+            <Thickness x:Key="AppPaddingLarge">24</Thickness>
+            <Thickness x:Key="AppMarginSmall">8</Thickness>
+            <Thickness x:Key="AppMarginNormal">16</Thickness>
+            <Thickness x:Key="AppMarginLarge">24</Thickness>
+            
+            <!-- Corner radius -->
+            <CornerRadius x:Key="AppCornerRadiusSmall">4</CornerRadius>
+            <CornerRadius x:Key="AppCornerRadiusNormal">8</CornerRadius>
+            <CornerRadius x:Key="AppCornerRadiusLarge">12</CornerRadius>
 
-            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}" />
-            <SolidColorBrush x:Key="WhiteBrush" Color="White" />
-            <SolidColorBrush x:Key="BlackBrush" Color="Black" />
-
-            <x:Double x:Key="AppFontSize">14</x:Double>
-
-            <Style x:Key="MyLabel" TargetType="TextBlock">
-                <Setter Property="Foreground"
-                        Value="{StaticResource PrimaryBrush}" />
+            <!-- Button Styles -->
+            <Style x:Key="AppButtonBase" TargetType="Button">
+                <Setter Property="FontSize" Value="{StaticResource AppFontSizeNormal}" />
+                <Setter Property="Padding" Value="16,12" />
+                <Setter Property="CornerRadius" Value="{StaticResource AppCornerRadiusNormal}" />
+                <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+                <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
+                <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             </Style>
 
-            <Style x:Key="Action" TargetType="Button">
-                <Setter Property="FontSize"
-                        Value="{StaticResource AppFontSize}" />
-                <Setter Property="Padding"
-                        Value="14,10" />
-                <Setter Property="CornerRadius"
-                        Value="8" />
+            <Style x:Key="AppButtonPrimary" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+                <Setter Property="Background" Value="{StaticResource AppPrimaryBrush}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderBrush" Value="{StaticResource AppPrimaryBrush}" />
+            </Style>
+            
+            <Style x:Key="AppButtonSecondary" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+                <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+                <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
             </Style>
 
-            <Style x:Key="PrimaryAction"
-                   TargetType="Button"
-                   BasedOn="{StaticResource Action}">
-                <Setter Property="Background"
-                        Value="{StaticResource PrimaryBrush}" />
-                <Setter Property="CornerRadius"
-                        Value="8" />
-                <Setter Property="Foreground"
-                        Value="{StaticResource WhiteBrush}" />
+            <!-- Card Style -->
+            <Style x:Key="AppCard" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="{StaticResource AppCornerRadiusNormal}" />
+                <Setter Property="Padding" Value="{StaticResource AppSpacingNormal}" />
+            </Style>
+
+            <!-- Text Styles -->
+            <Style x:Key="AppTextHeading" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource AppFontSizeXLarge}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            </Style>
+            
+            <Style x:Key="AppTextSubheading" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource AppFontSizeLarge}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            </Style>
+            
+            <Style x:Key="AppTextBody" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource AppFontSizeNormal}" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            </Style>
+            
+            <Style x:Key="AppTextCaption" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource AppFontSizeSmall}" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>
