@@ -46,13 +46,13 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Panel - Images -->
-            <Border Grid.Column="0" Style="{StaticResource AppCard}" Margin="0,0,8,0">
+            <Border Grid.Column="0" Style="{StaticResource AppCard}" Margin="0,0,8,0" Padding="16">
                 <ScrollViewer>
                     <StackPanel Spacing="16">
                         <TextBlock Text="Images" Style="{StaticResource AppTextSubheading}"/>
 
                         <!-- Primary Image -->
-                        <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" MinHeight="200">
+                        <Border BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" MinHeight="200" Background="{ThemeResource SystemControlAcrylicElementBrush}">
                             <Grid>
                                 <Image x:Name="PrimaryImage" Stretch="Uniform" Margin="8"/>
                                 <Button x:Name="UploadPrimaryButton" Content="📁 Add Primary Image" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource AppButtonSecondary}" Click="OnUploadPrimaryClicked" Visibility="Visible"/>
@@ -67,7 +67,7 @@
                         <ItemsControl x:Name="AdditionalImagesList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Margin="0,8,0,0" Height="120">
+                                    <Border BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0.5" CornerRadius="4" Margin="0,8,0,0" Height="120">
                                         <Grid>
                                             <Image Source="{Binding ImageSource}" Stretch="Uniform" Margin="8"/>
                                             <Button Content="❌" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="8" Style="{StaticResource AppButtonSecondary}" Click="OnRemoveAdditionalClicked" Tag="{Binding}"/>
@@ -89,21 +89,19 @@
                 </Grid.RowDefinitions>
 
                 <!-- Prompt Section -->
-                <Border Grid.Row="0" Style="{StaticResource AppCard}" Margin="0,0,0,8">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Prompt" Style="{StaticResource AppTextSubheading}"/>
-                        <TextBox x:Name="PromptTextBox" PlaceholderText="Describe what you want the AI to do with your image..." TextWrapping="Wrap" AcceptsReturn="True" Height="100" FontSize="{StaticResource AppFontSizeNormal}"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Button x:Name="ClearButton" Grid.Column="0" Content="🗑️ Clear" Style="{StaticResource AppButtonSecondary}" Click="OnClearClicked"/>
-                            <Button x:Name="GenerateButton" Grid.Column="2" Content="🚀 Generate" Style="{StaticResource AppButtonPrimary}" Click="OnGenerateClicked"/>
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                <StackPanel Spacing="8" Margin="0,0,0,16">
+                    <TextBlock Text="Prompt" Style="{StaticResource AppTextSubheading}"/>
+                    <TextBox x:Name="PromptTextBox" PlaceholderText="Describe what you want the AI to do with your image..." TextWrapping="Wrap" AcceptsReturn="True" Height="100" FontSize="{StaticResource AppFontSizeNormal}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="ClearButton" Grid.Column="0" Content="🗑️ Clear" Style="{StaticResource AppButtonSecondary}" Click="OnClearClicked"/>
+                        <Button x:Name="GenerateButton" Grid.Column="2" Content="🚀 Generate" Style="{StaticResource AppButtonPrimary}" Click="OnGenerateClicked"/>
+                    </Grid>
+                </StackPanel>
 
                 <!-- Results Section -->
                 <Border Grid.Row="1" Style="{StaticResource AppCard}" Margin="0,0,0,8">
@@ -117,12 +115,9 @@
                 </Border>
 
                 <!-- Action Buttons -->
-                <Border Grid.Row="2" Style="{StaticResource AppCard}">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                        <Button x:Name="DownloadButton" Content="💾 Download" Style="{StaticResource AppButtonPrimary}" Click="OnDownloadClicked" IsEnabled="False"/>
-                        <Button x:Name="CopyPromptButton" Content="📋 Copy Prompt" Style="{StaticResource AppButtonSecondary}" Click="OnCopyPromptClicked" IsEnabled="False"/>
-                    </StackPanel>
-                </Border>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,16,0,0">
+                    <Button x:Name="DownloadButton" Content="💾 Download" Style="{StaticResource AppButtonPrimary}" Click="OnDownloadClicked" IsEnabled="False"/>
+                </StackPanel>
             </Grid>
         </Grid>
 
@@ -145,7 +140,7 @@
         </Border>
 
         <!-- Settings Panel Overlay -->
-        <Border x:Name="SettingsPanelOverlay" Background="{ThemeResource SystemControlAcrylicWindowBrush}" Visibility="Collapsed" Grid.RowSpan="2">
+        <Border x:Name="SettingsPanelOverlay" Background="#80000000" Visibility="Collapsed" Grid.RowSpan="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -183,61 +178,55 @@
                         <ScrollViewer Grid.Row="1" Padding="16">
                             <StackPanel Spacing="16">
                                 <!-- API Key Section -->
-                                <Border Style="{StaticResource AppCard}">
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="API Configuration" Style="{StaticResource AppTextSubheading}"/>
-                                        <TextBlock Text="Enter your ImageGen API key to enable image generation." Style="{StaticResource AppTextCaption}" TextWrapping="Wrap"/>
-                                        <TextBox x:Name="ApiKeyTextBox" PlaceholderText="Enter your API key..." FontSize="{StaticResource AppFontSizeNormal}"/>
-                                        <TextBlock Text="🔒 Your API key is stored securely on your local device only." Style="{StaticResource AppTextCaption}"/>
-                                    </StackPanel>
-                                </Border>
+                                <StackPanel Spacing="8" Margin="0,0,0,16">
+                                    <TextBlock Text="API Configuration" Style="{StaticResource AppTextSubheading}"/>
+                                    <TextBlock Text="Enter your ImageGen API key to enable image generation." Style="{StaticResource AppTextCaption}" TextWrapping="Wrap"/>
+                                    <TextBox x:Name="ApiKeyTextBox" PlaceholderText="Enter your API key..." FontSize="{StaticResource AppFontSizeNormal}"/>
+                                    <TextBlock Text="🔒 Your API key is stored securely on your local device only." Style="{StaticResource AppTextCaption}"/>
+                                </StackPanel>
 
                                 <!-- Default Settings Section -->
-                                <Border Style="{StaticResource AppCard}">
-                                    <StackPanel Spacing="16">
-                                        <TextBlock Text="Default Generation Settings" Style="{StaticResource AppTextSubheading}"/>
-                                        <TextBlock Text="These settings will be used as defaults for all image generations." Style="{StaticResource AppTextCaption}" TextWrapping="Wrap"/>
+                                <StackPanel Spacing="16" Margin="0,0,0,16">
+                                    <TextBlock Text="Default Generation Settings" Style="{StaticResource AppTextSubheading}"/>
+                                    <TextBlock Text="These settings will be used as defaults for all image generations." Style="{StaticResource AppTextCaption}" TextWrapping="Wrap"/>
 
-                                        <!-- Quality Setting -->
-                                        <StackPanel Spacing="8">
-                                            <TextBlock Text="Image Quality" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
-                                            <ComboBox x:Name="QualityComboBox" FontSize="{StaticResource AppFontSizeNormal}">
-                                                <ComboBoxItem Content="Standard" Tag="Standard"/>
-                                                <ComboBoxItem Content="High" Tag="High"/>
-                                            </ComboBox>
-                                        </StackPanel>
-
-                                        <!-- Format Setting -->
-                                        <StackPanel Spacing="8">
-                                            <TextBlock Text="Output Format" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
-                                            <ComboBox x:Name="FormatComboBox" FontSize="{StaticResource AppFontSizeNormal}">
-                                                <ComboBoxItem Content="JPEG" Tag="Jpeg"/>
-                                                <ComboBoxItem Content="PNG" Tag="Png"/>
-                                                <ComboBoxItem Content="WebP" Tag="Webp"/>
-                                            </ComboBox>
-                                        </StackPanel>
-
-                                        <!-- Fidelity Setting -->
-                                        <StackPanel Spacing="8">
-                                            <TextBlock Text="Input Fidelity" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Higher fidelity preserves more details from input images." Style="{StaticResource AppTextCaption}" TextWrapping="Wrap"/>
-                                            <ComboBox x:Name="FidelityComboBox" FontSize="{StaticResource AppFontSizeNormal}">
-                                                <ComboBoxItem Content="Default" Tag="Default"/>
-                                                <ComboBoxItem Content="High" Tag="High"/>
-                                            </ComboBox>
-                                        </StackPanel>
+                                    <!-- Quality Setting -->
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Image Quality" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
+                                        <ComboBox x:Name="QualityComboBox" FontSize="{StaticResource AppFontSizeNormal}">
+                                            <ComboBoxItem Content="Standard" Tag="Standard"/>
+                                            <ComboBoxItem Content="High" Tag="High"/>
+                                        </ComboBox>
                                     </StackPanel>
-                                </Border>
+
+                                    <!-- Format Setting -->
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Output Format" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
+                                        <ComboBox x:Name="FormatComboBox" FontSize="{StaticResource AppFontSizeNormal}">
+                                            <ComboBoxItem Content="JPEG" Tag="Jpeg"/>
+                                            <ComboBoxItem Content="PNG" Tag="Png"/>
+                                            <ComboBoxItem Content="WebP" Tag="Webp"/>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <!-- Fidelity Setting -->
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Input Fidelity" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Higher fidelity preserves more details from input images." Style="{StaticResource AppTextCaption}" TextWrapping="Wrap"/>
+                                        <ComboBox x:Name="FidelityComboBox" FontSize="{StaticResource AppFontSizeNormal}">
+                                            <ComboBoxItem Content="Default" Tag="Default"/>
+                                            <ComboBoxItem Content="High" Tag="High"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </StackPanel>
 
                                 <!-- About Section -->
-                                <Border Style="{StaticResource AppCard}" Background="{ThemeResource SystemControlAcrylicElementBrush}">
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="About" Style="{StaticResource AppTextSubheading}"/>
-                                        <TextBlock Text="AI Image Generator" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
-                                        <TextBlock Text="A modern desktop application for AI-powered image generation and editing." TextWrapping="Wrap" Style="{StaticResource AppTextCaption}"/>
-                                        <TextBlock Text="Built with WinUI 3 and .NET 9" Style="{StaticResource AppTextCaption}"/>
-                                    </StackPanel>
-                                </Border>
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="About" Style="{StaticResource AppTextSubheading}"/>
+                                    <TextBlock Text="AI Image Generator" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="A modern desktop application for AI-powered image generation and editing." TextWrapping="Wrap" Style="{StaticResource AppTextCaption}"/>
+                                    <TextBlock Text="Built with WinUI 3 and .NET 9" Style="{StaticResource AppTextCaption}"/>
+                                </StackPanel>
                             </StackPanel>
                         </ScrollViewer>
 
@@ -254,7 +243,7 @@
         </Border>
 
         <!-- Prompt Templates Panel Overlay -->
-        <Border x:Name="PromptTemplatesPanelOverlay" Background="{ThemeResource SystemControlAcrylicWindowBrush}" Visibility="Collapsed" Grid.RowSpan="2">
+        <Border x:Name="PromptTemplatesPanelOverlay" Background="#80000000" Visibility="Collapsed" Grid.RowSpan="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

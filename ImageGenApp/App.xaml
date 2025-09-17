@@ -70,9 +70,9 @@
 
             <!-- Card Style -->
             <Style x:Key="AppCard" TargetType="Border">
-                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
-                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
-                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="0.5" />
                 <Setter Property="CornerRadius" Value="{StaticResource AppCornerRadiusNormal}" />
                 <Setter Property="Padding" Value="{StaticResource AppSpacingNormal}" />
             </Style>

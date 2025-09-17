@@ -359,7 +359,6 @@ namespace ImageGenApp.Views
                 ResultImage.Source = bitmapImage;
 
                 DownloadButton.IsEnabled = true;
-                CopyPromptButton.IsEnabled = true;
             });
         }
 
@@ -409,14 +408,6 @@ namespace ImageGenApp.Views
             }
         }
 
-        private async void OnCopyPromptClicked(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(PromptTextBox.Text))
-            {
-                CopyToClipboard(PromptTextBox.Text);
-                await ShowInfoDialog("Success", "Prompt copied to clipboard!");
-            }
-        }
 
         private void OnClearClicked(object sender, RoutedEventArgs e)
         {
@@ -433,7 +424,6 @@ namespace ImageGenApp.Views
             UploadPrimaryButton.Visibility = Visibility.Visible;
             RemovePrimaryButton.Visibility = Visibility.Collapsed;
             DownloadButton.IsEnabled = false;
-            CopyPromptButton.IsEnabled = false;
 
             // Show the placeholder overlay again
             ResultPlaceholder.Visibility = Visibility.Visible;
