@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Microsoft.UI.Xaml.Media;
 
 namespace ImageGenApp.Views
 {
@@ -31,11 +32,15 @@ namespace ImageGenApp.Views
         private ILogger<ImageGenClient>? _logger;
         private HttpClient? _httpClient;
         private SettingsService? _settingsService;
+        private PromptTemplateService? _promptTemplateService;
 
         // UI State
         private string? _primaryImagePath;
         private ImageResult? _currentResult;
         private readonly ObservableCollection<AdditionalImage> _additionalImages = new();
+
+        // Panel state
+        private AppSettings? _originalSettings;
 
         public MainPage()
         {
@@ -59,6 +64,7 @@ namespace ImageGenApp.Views
                 _logger = loggerFactory.CreateLogger<ImageGenClient>();
 
                 _settingsService = services.GetRequiredService<SettingsService>();
+                _promptTemplateService = new PromptTemplateService();
 
                 // Ensure default settings exist
                 await _settingsService.GetSettingsAsync();
@@ -102,32 +108,130 @@ namespace ImageGenApp.Views
         {
             try
             {
-                if (_settingsService == null || _logger == null)
+                if (_settingsService == null)
                 {
                     await ShowErrorDialog("Error", "Application is not fully initialized. Please restart the application.");
                     return;
                 }
 
-                var settingsDialog = new SettingsDialog(_settingsService, _logger, this.XamlRoot);
-                var result = await settingsDialog.ShowAsync();
-
-                if (result == ContentDialogResult.Primary)
+                // Load current settings
+                var settings = await _settingsService.GetSettingsAsync();
+                _originalSettings = new AppSettings
                 {
-                    // Reinitialize client with new settings
-                    await InitializeImageGenClient();
+                    ApiKey = settings.ApiKey,
+                    DefaultQuality = settings.DefaultQuality,
+                    DefaultFormat = settings.DefaultFormat,
+                    DefaultFidelity = settings.DefaultFidelity
+                };
 
-                    // Hide API key warning if key is now set
-                    var apiKey = await _settingsService.GetApiKeyAsync();
-                    if (!string.IsNullOrWhiteSpace(apiKey))
-                    {
-                        ApiKeyWarning.Visibility = Visibility.Collapsed;
-                    }
-                }
+                // Populate UI
+                ApiKeyTextBox.Text = settings.ApiKey ?? string.Empty;
+                
+                // Set combo box selections
+                SetComboBoxSelection(QualityComboBox, settings.DefaultQuality.ToString());
+                SetComboBoxSelection(FormatComboBox, settings.DefaultFormat.ToString());
+                SetComboBoxSelection(FidelityComboBox, settings.DefaultFidelity.ToString());
+
+                // Show panel
+                SettingsPanelOverlay.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
                 await ShowErrorDialog("Settings Error", $"Failed to open settings: {ex.Message}");
-                _logger?.LogError(ex, "Error opening settings dialog");
+                _logger?.LogError(ex, "Error opening settings panel");
+            }
+        }
+
+        private async void OnPromptTemplatesClicked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_promptTemplateService == null)
+                {
+                    await ShowErrorDialog("Error", "Application is not fully initialized. Please restart the application.");
+                    return;
+                }
+
+                // Populate templates
+                _ = PopulatePromptTemplates();
+
+                // Show panel
+                PromptTemplatesPanelOverlay.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorDialog("Templates Error", $"Failed to open prompt templates: {ex.Message}");
+                _logger?.LogError(ex, "Error opening prompt templates panel");
+            }
+        }
+
+        private void OnSettingsPanelOverlayTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            SettingsPanelOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnPromptTemplatesPanelOverlayTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            PromptTemplatesPanelOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnCloseSettingsPanelClicked(object sender, RoutedEventArgs e)
+        {
+            SettingsPanelOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnClosePromptTemplatesPanelClicked(object sender, RoutedEventArgs e)
+        {
+            PromptTemplatesPanelOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnCancelSettingsClicked(object sender, RoutedEventArgs e)
+        {
+            SettingsPanelOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private async void OnSaveSettingsClicked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_settingsService == null)
+                {
+                    await ShowErrorDialog("Error", "Settings service is not available.");
+                    return;
+                }
+
+                // Get values from UI
+                var apiKey = ApiKeyTextBox.Text.Trim();
+                var quality = GetComboBoxSelection<ImageQuality>(QualityComboBox);
+                var format = GetComboBoxSelection<ImageFormat>(FormatComboBox);
+                var fidelity = GetComboBoxSelection<InputFidelity>(FidelityComboBox);
+
+                // Save settings
+                await _settingsService.SaveApiKeyAsync(apiKey);
+                var settings = await _settingsService.GetSettingsAsync();
+                settings.DefaultQuality = quality;
+                settings.DefaultFormat = format;
+                settings.DefaultFidelity = fidelity;
+                await _settingsService.SaveSettingsAsync(settings);
+
+                // Reinitialize client with new settings
+                await InitializeImageGenClient();
+
+                // Hide API key warning if key is now set
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    ApiKeyWarning.Visibility = Visibility.Collapsed;
+                }
+
+                // Close panel
+                SettingsPanelOverlay.Visibility = Visibility.Collapsed;
+
+                await ShowInfoDialog("Settings Saved", "Your settings have been saved successfully!");
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorDialog("Save Error", $"Failed to save settings: {ex.Message}");
+                _logger?.LogError(ex, "Error saving settings");
             }
         }
 
@@ -412,6 +516,247 @@ namespace ImageGenApp.Views
         private void MainPage_Unloaded(object sender, RoutedEventArgs e)
         {
             CleanupResources();
+        }
+
+        // Helper methods for slide-out panels
+        private void SetComboBoxSelection(ComboBox comboBox, string value)
+        {
+            foreach (ComboBoxItem item in comboBox.Items)
+            {
+                if (item.Tag?.ToString() == value)
+                {
+                    comboBox.SelectedItem = item;
+                    break;
+                }
+            }
+        }
+
+        private T GetComboBoxSelection<T>(ComboBox comboBox) where T : struct, Enum
+        {
+            if (comboBox.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            {
+                if (Enum.TryParse<T>(tag, out var result))
+                {
+                    return result;
+                }
+            }
+            return default;
+        }
+
+        private Task PopulatePromptTemplates()
+        {
+            if (_promptTemplateService == null) return Task.CompletedTask;
+
+            TemplatesContainer.Children.Clear();
+
+            var searchTerm = TemplateSearchBox.Text?.Trim();
+            var templates = string.IsNullOrEmpty(searchTerm) 
+                ? _promptTemplateService.GetCategories().SelectMany(c => c.Templates).ToList()
+                : _promptTemplateService.SearchTemplates(searchTerm).ToList();
+
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                // Group by category
+                var categories = _promptTemplateService.GetCategories();
+                foreach (var category in categories)
+                {
+                    if (category.Templates.Any())
+                    {
+                        // Category header
+                        var categoryHeader = new TextBlock
+                        {
+                            Text = category.Name,
+                            FontSize = 16,
+                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                            Margin = new Thickness(0, 10, 0, 5)
+                        };
+                        TemplatesContainer.Children.Add(categoryHeader);
+
+                        // Templates in category
+                        foreach (var template in category.Templates)
+                        {
+                            var templateControl = CreateTemplateControl(template);
+                            TemplatesContainer.Children.Add(templateControl);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Search results
+                if (templates.Any())
+                {
+                    var searchHeader = new TextBlock
+                    {
+                        Text = $"Search Results ({templates.Count})",
+                        FontSize = 16,
+                        FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                        Margin = new Thickness(0, 0, 0, 10)
+                    };
+                    TemplatesContainer.Children.Add(searchHeader);
+
+                    foreach (var template in templates)
+                    {
+                        var templateControl = CreateTemplateControl(template);
+                        TemplatesContainer.Children.Add(templateControl);
+                    }
+                }
+                else
+                {
+                    var noResults = new TextBlock
+                    {
+                        Text = "No templates found matching your search.",
+                        FontStyle = Windows.UI.Text.FontStyle.Italic,
+                        Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 20, 0, 0)
+                    };
+                    TemplatesContainer.Children.Add(noResults);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Border CreateTemplateControl(PromptTemplate template)
+        {
+            var border = new Border
+            {
+                BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(6),
+                Padding = new Thickness(20),
+                Margin = new Thickness(0, 8, 0, 0),
+                Background = new SolidColorBrush(Microsoft.UI.Colors.White)
+            };
+
+            // Make the entire border clickable
+            border.Tapped += async (s, e) => await OnTemplateClicked(template);
+
+            var stackPanel = new StackPanel { Spacing = 10 };
+
+            // Header with title and category
+            var headerGrid = new Grid();
+            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            // Title
+            var titleBlock = new TextBlock
+            {
+                Text = template.Title,
+                FontSize = 16,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetColumn(titleBlock, 0);
+            headerGrid.Children.Add(titleBlock);
+
+            // Category badge
+            var categoryBadge = new Border
+            {
+                Background = new SolidColorBrush(Microsoft.UI.Colors.LightBlue),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(10, 4, 10, 4),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var categoryText = new TextBlock
+            {
+                Text = template.Category,
+                FontSize = 10,
+                FontWeight = Microsoft.UI.Text.FontWeights.Medium,
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.DarkBlue)
+            };
+            categoryBadge.Child = categoryText;
+            Grid.SetColumn(categoryBadge, 1);
+            headerGrid.Children.Add(categoryBadge);
+
+            stackPanel.Children.Add(headerGrid);
+
+            // Description
+            if (!string.IsNullOrEmpty(template.Description))
+            {
+                var descriptionBlock = new TextBlock
+                {
+                    Text = template.Description,
+                    FontSize = 13,
+                    Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, -5, 0, 0)
+                };
+                stackPanel.Children.Add(descriptionBlock);
+            }
+
+            // Full prompt text with background
+            var promptBorder = new Border
+            {
+                Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray),
+                Padding = new Thickness(12, 8, 12, 8),
+                CornerRadius = new CornerRadius(4)
+            };
+            var promptBlock = new TextBlock
+            {
+                Text = template.Prompt,
+                FontSize = 12,
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.DarkSlateGray),
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 18
+            };
+            promptBorder.Child = promptBlock;
+            stackPanel.Children.Add(promptBorder);
+
+            // Click instruction
+            var instructionBlock = new TextBlock
+            {
+                Text = "💡 Click to use this prompt",
+                FontSize = 11,
+                FontStyle = Windows.UI.Text.FontStyle.Italic,
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.DarkBlue),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, -3, 0, 0)
+            };
+            stackPanel.Children.Add(instructionBlock);
+
+            border.Child = stackPanel;
+            return border;
+        }
+
+        private async Task OnTemplateClicked(PromptTemplate template)
+        {
+            try
+            {
+                // Copy to clipboard
+                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                dataPackage.SetText(template.Prompt);
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+
+                // Insert into the prompt textbox
+                if (PromptTextBox != null)
+                {
+                    PromptTextBox.Text = template.Prompt;
+                }
+
+                // Close the templates panel
+                PromptTemplatesPanelOverlay.Visibility = Visibility.Collapsed;
+
+                // Show brief confirmation
+                await ShowInfoDialog("Template Applied", $"'{template.Title}' has been applied to your prompt!");
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorDialog("Template Error", $"Failed to apply template: {ex.Message}");
+            }
+        }
+
+        private void OnTemplateSearchTextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                _ = PopulatePromptTemplates();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error searching prompt templates");
+            }
         }
     }
 }

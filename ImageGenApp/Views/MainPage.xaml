@@ -31,7 +31,10 @@
                     <TextBlock Text="AI Image Generator" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <Button x:Name="SettingsButton" Grid.Column="1" Content="⚙️ Settings" Style="{StaticResource Action}" Click="OnSettingsClicked"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button x:Name="PromptTemplatesButton" Content="💡 Templates" Style="{StaticResource Action}" Click="OnPromptTemplatesClicked"/>
+                    <Button x:Name="SettingsButton" Content="⚙️ Settings" Style="{StaticResource Action}" Click="OnSettingsClicked"/>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -139,6 +142,167 @@
                 <TextBlock Text="Please configure your API key in settings to use this application." FontSize="14" Foreground="#856404" TextWrapping="Wrap"/>
                 <Button Content="Open Settings" Style="{StaticResource Action}" HorizontalAlignment="Center" Click="OnSettingsClicked"/>
             </StackPanel>
+        </Border>
+
+        <!-- Settings Panel Overlay -->
+        <Border x:Name="SettingsPanelOverlay" Background="#80000000" Visibility="Collapsed" Grid.RowSpan="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Click area to close panel -->
+                <Border Grid.Column="0" Background="Transparent" Tapped="OnSettingsPanelOverlayTapped"/>
+
+                <!-- Settings Panel -->
+<Border x:Name="SettingsPanel" Grid.Column="1" Background="{ThemeResource SystemControlAcrylicElementBrush}" 
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" BorderThickness="1,0,0,0"
+                        Width="700" MinWidth="600" MaxWidth="800">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <Border Grid.Row="0" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Padding="20,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="⚙️ Settings" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="✕" Click="OnCloseSettingsPanelClicked" 
+                                        Style="{StaticResource Action}" Background="Transparent"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Content -->
+                        <ScrollViewer Grid.Row="1" Padding="20">
+                            <StackPanel Spacing="20">
+                                <!-- API Key Section -->
+                                <Border BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1" CornerRadius="4" Padding="15">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="API Configuration" FontSize="16" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Enter your ImageGen API key to enable image generation." FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" TextWrapping="Wrap"/>
+                                        <TextBox x:Name="ApiKeyTextBox" PlaceholderText="Enter your API key..." FontSize="14"/>
+                                        <TextBlock Text="🔒 Your API key is stored securely on your local device only." FontSize="11" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Default Settings Section -->
+                                <Border BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1" CornerRadius="4" Padding="15">
+                                    <StackPanel Spacing="15">
+                                        <TextBlock Text="Default Generation Settings" FontSize="16" FontWeight="SemiBold"/>
+                                        <TextBlock Text="These settings will be used as defaults for all image generations." FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" TextWrapping="Wrap"/>
+
+                                        <!-- Quality Setting -->
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Text="Image Quality" FontSize="14" FontWeight="SemiBold"/>
+                                            <ComboBox x:Name="QualityComboBox" FontSize="14">
+                                                <ComboBoxItem Content="Standard" Tag="Standard"/>
+                                                <ComboBoxItem Content="High" Tag="High"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <!-- Format Setting -->
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Text="Output Format" FontSize="14" FontWeight="SemiBold"/>
+                                            <ComboBox x:Name="FormatComboBox" FontSize="14">
+                                                <ComboBoxItem Content="JPEG" Tag="Jpeg"/>
+                                                <ComboBoxItem Content="PNG" Tag="Png"/>
+                                                <ComboBoxItem Content="WebP" Tag="Webp"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <!-- Fidelity Setting -->
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Text="Input Fidelity" FontSize="14" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Higher fidelity preserves more details from input images." FontSize="11" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" TextWrapping="Wrap"/>
+                                            <ComboBox x:Name="FidelityComboBox" FontSize="14">
+                                                <ComboBoxItem Content="Default" Tag="Default"/>
+                                                <ComboBoxItem Content="High" Tag="High"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- About Section -->
+                                <Border BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1" CornerRadius="4" Padding="15" Background="{ThemeResource SystemControlAcrylicElementBrush}">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="About" FontSize="16" FontWeight="SemiBold"/>
+                                        <TextBlock Text="AI Image Generator" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Text="A modern desktop application for AI-powered image generation and editing." TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                        <TextBlock Text="Built with WinUI 3 and .NET 9" FontSize="11" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Footer -->
+                        <Border Grid.Row="2" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Padding="20,15">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                                <Button x:Name="CancelSettingsButton" Content="Cancel" Style="{StaticResource Action}" Click="OnCancelSettingsClicked"/>
+                                <Button x:Name="SaveSettingsButton" Content="Save" Style="{StaticResource PrimaryAction}" Click="OnSaveSettingsClicked"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Prompt Templates Panel Overlay -->
+        <Border x:Name="PromptTemplatesPanelOverlay" Background="#80000000" Visibility="Collapsed" Grid.RowSpan="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Click area to close panel -->
+                <Border Grid.Column="0" Background="Transparent" Tapped="OnPromptTemplatesPanelOverlayTapped"/>
+
+                <!-- Prompt Templates Panel -->
+                <Border x:Name="PromptTemplatesPanel" Grid.Column="1" Background="{ThemeResource SystemControlAcrylicElementBrush}" 
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" BorderThickness="1,0,0,0"
+                        Width="700" MinWidth="600" MaxWidth="800">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <Border Grid.Row="0" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Padding="20,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="💡 Prompt Templates" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="✕" Click="OnClosePromptTemplatesPanelClicked" 
+                                        Style="{StaticResource Action}" Background="Transparent"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Search -->
+                        <Border Grid.Row="1" Padding="20,10">
+                            <TextBox x:Name="TemplateSearchBox" PlaceholderText="🔍 Search templates..." FontSize="14" 
+                                     TextChanged="OnTemplateSearchTextChanged"/>
+                        </Border>
+
+                        <!-- Templates List -->
+                        <ScrollViewer Grid.Row="2" Padding="20,0,20,20">
+                            <StackPanel x:Name="TemplatesContainer" Spacing="15">
+                                <!-- Templates will be populated dynamically -->
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
         </Border>
     </Grid>
 </Page>
