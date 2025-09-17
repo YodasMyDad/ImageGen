@@ -17,6 +17,8 @@ public class AppSettings
 
     public InputFidelity DefaultFidelity { get; set; } = InputFidelity.High;
 
+    public string Theme { get; set; } = "Default"; // Default, Light, Dark
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

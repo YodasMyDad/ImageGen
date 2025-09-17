@@ -46,6 +46,7 @@ namespace ImageGenApp
                     services.AddDbContextFactory<AppDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
 
                     services.AddSingleton<SettingsService>();
+                    services.AddSingleton<IThemeService, ThemeService>();
                 })
                 .Build();
 
@@ -70,6 +71,10 @@ namespace ImageGenApp
                     dbContext.Database.Migrate();
                 }
             }
+
+            // Initialize theme service
+            var themeService = Services.GetRequiredService<IThemeService>();
+            _ = Task.Run(async () => await themeService.InitializeAsync());
 
             Window ??= new Window();
             Window.Title = "ImageGen - AI Image Editing";

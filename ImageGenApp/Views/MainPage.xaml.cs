@@ -32,6 +32,7 @@ namespace ImageGenApp.Views
         private HttpClient? _httpClient;
         private SettingsService? _settingsService;
         private PromptTemplateService? _promptTemplateService;
+        private IThemeService? _themeService;
 
         // UI State
         private string? _primaryImagePath;
@@ -64,6 +65,7 @@ namespace ImageGenApp.Views
 
                 _settingsService = services.GetRequiredService<SettingsService>();
                 _promptTemplateService = new PromptTemplateService();
+                _themeService = services.GetRequiredService<IThemeService>();
 
                 // Ensure default settings exist
                 await _settingsService.GetSettingsAsync();
@@ -120,7 +122,8 @@ namespace ImageGenApp.Views
                     ApiKey = settings.ApiKey,
                     DefaultQuality = settings.DefaultQuality,
                     DefaultFormat = settings.DefaultFormat,
-                    DefaultFidelity = settings.DefaultFidelity
+                    DefaultFidelity = settings.DefaultFidelity,
+                    Theme = settings.Theme
                 };
 
                 // Populate UI
@@ -130,6 +133,7 @@ namespace ImageGenApp.Views
                 SetComboBoxSelection(QualityComboBox, settings.DefaultQuality.ToString());
                 SetComboBoxSelection(FormatComboBox, settings.DefaultFormat.ToString());
                 SetComboBoxSelection(FidelityComboBox, settings.DefaultFidelity.ToString());
+                SetComboBoxSelection(ThemeComboBox, settings.Theme);
 
                 // Show panel
                 SettingsPanelOverlay.Visibility = Visibility.Visible;
@@ -204,6 +208,7 @@ namespace ImageGenApp.Views
                 var quality = GetComboBoxSelection<ImageQuality>(QualityComboBox);
                 var format = GetComboBoxSelection<ImageFormat>(FormatComboBox);
                 var fidelity = GetComboBoxSelection<InputFidelity>(FidelityComboBox);
+                var theme = GetComboBoxSelectionString(ThemeComboBox);
 
                 // Save settings
                 await _settingsService.SaveApiKeyAsync(apiKey);
@@ -211,7 +216,14 @@ namespace ImageGenApp.Views
                 settings.DefaultQuality = quality;
                 settings.DefaultFormat = format;
                 settings.DefaultFidelity = fidelity;
+                settings.Theme = theme;
                 await _settingsService.SaveSettingsAsync(settings);
+
+                // Apply theme change
+                if (_themeService != null)
+                {
+                    await _themeService.SetThemeAsync(theme);
+                }
 
                 // Reinitialize client with new settings
                 await InitializeImageGenClient();
@@ -541,6 +553,15 @@ namespace ImageGenApp.Views
             return default;
         }
 
+        private string GetComboBoxSelectionString(ComboBox comboBox)
+        {
+            if (comboBox.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            {
+                return tag;
+            }
+            return "Default";
+        }
+
         private Task PopulatePromptTemplates()
         {
             if (_promptTemplateService == null) return Task.CompletedTask;
@@ -749,6 +770,23 @@ namespace ImageGenApp.Views
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error searching prompt templates");
+            }
+        }
+
+        private async void OnThemeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (_themeService != null && sender is ComboBox comboBox)
+                {
+                    var theme = GetComboBoxSelectionString(comboBox);
+                    await _themeService.SetThemeAsync(theme);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error changing theme");
+                await ShowErrorDialog("Theme Error", $"Failed to change theme: {ex.Message}");
             }
         }
     }

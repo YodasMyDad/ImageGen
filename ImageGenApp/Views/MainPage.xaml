@@ -185,6 +185,20 @@
                                     <TextBlock Text="🔒 Your API key is stored securely on your local device only." Style="{StaticResource AppTextCaption}"/>
                                 </StackPanel>
 
+                                <!-- Appearance Section -->
+                                <StackPanel Spacing="8" Margin="0,0,0,16">
+                                    <TextBlock Text="Appearance" Style="{StaticResource AppTextSubheading}"/>
+                                    <TextBlock Text="Choose your preferred app theme." Style="{StaticResource AppTextCaption}" TextWrapping="Wrap"/>
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Theme" Style="{StaticResource AppTextBody}" FontWeight="SemiBold"/>
+                                        <ComboBox x:Name="ThemeComboBox" FontSize="{StaticResource AppFontSizeNormal}" SelectionChanged="OnThemeSelectionChanged">
+                                            <ComboBoxItem Content="Use System Setting" Tag="Default"/>
+                                            <ComboBoxItem Content="Light" Tag="Light"/>
+                                            <ComboBoxItem Content="Dark" Tag="Dark"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </StackPanel>
+
                                 <!-- Default Settings Section -->
                                 <StackPanel Spacing="16" Margin="0,0,0,16">
                                     <TextBlock Text="Default Generation Settings" Style="{StaticResource AppTextSubheading}"/>
