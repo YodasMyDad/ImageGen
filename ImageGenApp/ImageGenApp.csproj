@@ -18,13 +18,20 @@
 
         <!-- App Options -->
         <UseRidGraph>true</UseRidGraph>
-        <Platforms>x64</Platforms>
-        <PlatformTarget>x64</PlatformTarget>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <Platforms>x86;x64;ARM64</Platforms>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <PublishProfile>Properties\PublishProfiles\win-x64.pubxml</PublishProfile>
         <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) >= 8">win-x86;win-x64;win-arm64</RuntimeIdentifiers>
         <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &lt; 8">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+        
+        <!-- Single-file deployment optimizations (only for Release builds) -->
+        <WindowsAppSDKSelfContained Condition="'$(Configuration)' == 'Release'">true</WindowsAppSDKSelfContained>
+        <InvariantGlobalization>false</InvariantGlobalization>
+        <DebuggerSupport Condition="'$(Configuration)' == 'Debug'">true</DebuggerSupport>
+        <DebuggerSupport Condition="'$(Configuration)' != 'Debug'">false</DebuggerSupport>
+        <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+        <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+        <MetadataUpdaterSupport Condition="'$(Configuration)' == 'Debug'">true</MetadataUpdaterSupport>
+        <MetadataUpdaterSupport Condition="'$(Configuration)' != 'Debug'">false</MetadataUpdaterSupport>
     </PropertyGroup>
 
     <ItemGroup>

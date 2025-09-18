@@ -2,7 +2,7 @@
 
 **AI-Powered Image Editing for .NET Developers**
 
-Transform and create images with OpenAI's new gpt-image-1 model. Generate, edit, and enhance images using simple C# code. Perfect for web apps, APIs, and automation tools.
+Transform and create any image with OpenAI's new gpt-image-1 model. While capable of editing any image type, ImageGenAi excels at **product photography** and **portrait editing**. Generate, edit, and enhance images using simple C# code. Perfect for e-commerce, marketing, and professional photo editing workflows.
 
 *When creating high quality and high fidelity images the API can take up to 60+ seconds to respond*
 
@@ -11,13 +11,24 @@ Transform and create images with OpenAI's new gpt-image-1 model. Generate, edit,
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/)
 
 
-## ✨ Examples In The Demo Web Project
+## ✨ Some Examples Of What You Could Do
 
+**Product Photography:**
 - **Remove backgrounds** from product photos instantly
-- **Change backgrounds** to any scene or environment
+- **Change backgrounds** to any scene or environment  
 - **Add logos/watermarks** with perfect positioning
 - **Enhance product photos** with professional lighting and details
+
+**Portrait & Face Editing:**
+- **Preserve facial features** with high-fidelity editing
+- **Professional headshot enhancement**
+- **Background replacement** while maintaining natural skin tones
+- **Lighting and detail improvements** for portraits
+
+**General Image Editing:**
 - **Create images from text** descriptions
+- **Edit any image type** with AI precision
+- **Batch processing** for automation workflows
 
 Your imagination is the limit!
 
@@ -183,7 +194,9 @@ await File.WriteAllBytesAsync($"output.{extension}", result.Bytes.ToArray());
 
 ## 🎯 Key Features
 
-- **High-Fidelity Editing**: `InputFidelity.High` preserves faces, logos, and details
+- **High-Fidelity Editing**: `InputFidelity.High` preserves faces, logos, and fine details
+- **Product Photography Optimized**: Specialized for e-commerce and marketing imagery
+- **Face-Aware Processing**: Maintains natural skin tones and facial features
 - **Simple & Clean**: Easy-to-understand API designed for developers
 - **Async First**: Built for modern .NET with async/await
 - **Type Safe**: Strong typing prevents runtime errors
@@ -197,14 +210,19 @@ await File.WriteAllBytesAsync($"output.{extension}", result.Bytes.ToArray());
 
 ## 🖥️ Try the Demo
 
-Want to see it in action? Check out the **simple web demo**:
+Want to see it in action? Check out the **simple web demo** with real-world examples:
 
-- **Remove backgrounds** - Upload an image and make the background transparent or white
-- **Add logos** - Place logos on images with perfect positioning
-- **Change backgrounds** - Replace image backgrounds with new scenes
-- **Enhance products** - Improve product photos with better details
+**Product Photography Examples:**
+- **Remove backgrounds** - Upload product photos and make backgrounds transparent or white
+- **Change backgrounds** - Replace backgrounds with luxury marble, studio lighting, or custom scenes
+- **Enhance products** - Improve product photos with better lighting and professional details
 
-Each example shows you the exact AI prompt being used, so you can learn and adapt them for your own projects!
+**Portrait & Face Editing Examples:**
+- **Add logos** - Place logos on headshots or portraits with perfect positioning
+- **Background replacement** - Change portrait backgrounds while preserving natural skin tones
+- **Professional enhancement** - Improve lighting and details in portraits
+
+Each example shows you the exact AI prompt being used, so you can learn and adapt them for your own e-commerce, marketing, or portrait editing projects!
 
 ## 📚 Learn More
 

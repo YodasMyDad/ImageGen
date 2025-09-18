@@ -25,6 +25,11 @@ namespace ImageGenApp
         /// </summary>
         public App()
         {
+            // Required for Windows App SDK single-file deployment (Release builds only)
+#if !DEBUG
+            Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", AppContext.BaseDirectory);
+#endif
+            
             this.InitializeComponent();
 
             _host = Host.CreateDefaultBuilder()
