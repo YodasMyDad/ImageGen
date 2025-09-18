@@ -25,12 +25,15 @@ Transform and create any image with OpenAI's new gpt-image-1 model. While capabl
 - **Background replacement** while maintaining natural skin tones
 - **Lighting and detail improvements** for portraits
 
-**General Image Editing:**
-- **Create images from text** descriptions
-- **Edit any image type** with AI precision
-- **Batch processing** for automation workflows
+## 🎯 Key Features
 
-Your imagination is the limit!
+- **High-Fidelity Editing**: `InputFidelity.High` preserves faces, logos, products and fine details
+- **Product Photography Optimized**: Specialized for e-commerce and marketing imagery
+- **Face-Aware Processing**: Maintains natural skin tones and facial features
+- **Simple & Clean**: Easy-to-understand API designed for developers
+- **Async First**: Built for modern .NET with async/await
+- **Type Safe**: Strong typing prevents runtime errors
+- **Production Ready**: Handles errors gracefully and logs important events
 
 ## 🚀 Quick Start
 
@@ -192,19 +195,8 @@ var extension = result.Format switch {
 await File.WriteAllBytesAsync($"output.{extension}", result.Bytes.ToArray());
 ```
 
-## 🎯 Key Features
-
-- **High-Fidelity Editing**: `InputFidelity.High` preserves faces, logos, and fine details
-- **Product Photography Optimized**: Specialized for e-commerce and marketing imagery
-- **Face-Aware Processing**: Maintains natural skin tones and facial features
-- **Simple & Clean**: Easy-to-understand API designed for developers
-- **Async First**: Built for modern .NET with async/await
-- **Type Safe**: Strong typing prevents runtime errors
-- **Production Ready**: Handles errors gracefully and logs important events
-
 ## 🛠️ API Overview
 
-### Main Methods
 - `GenerateAsync()` - Create images from text prompts
 - `EditAsync()` - Edit existing images with prompts
 
@@ -224,18 +216,15 @@ Want to see it in action? Check out the **simple web demo** with real-world exam
 
 Each example shows you the exact AI prompt being used, so you can learn and adapt them for your own e-commerce, marketing, or portrait editing projects!
 
-## 📚 Learn More
+## 🖥️ Desktop Application Available
 
-- **Full API Documentation**: Check the XML comments in the code
-- **Error Handling**: See `ImageGenException`, `RateLimitExceededException`
-- **Best Practices**: Always use `InputFidelity.High` for important edits
+A **complete WinUI desktop application** is also available in this repository! Perfect for:
 
-## 📄 License
+**Features:**
+- All the same AI image editing capabilities as the library
+- Intuitive drag-and-drop interface
+- Built-in templates for common editing tasks
+- Settings and preferences management
+- Local SQLite database for editing history
 
-MIT License - see LICENSE file for details.
-
----
-
-**Ready to supercharge your .NET apps with AI image editing?** 🚀
-
-Start with the demo app, then integrate ImageGenAI into your project today!
+**Ready to deploy?** See the [Framework-Dependent Deployment Guide](ImageGenApp/README-SingleFile.md) for step-by-step instructions on building and distributing the desktop app.

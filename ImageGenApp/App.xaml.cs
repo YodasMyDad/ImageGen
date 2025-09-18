@@ -25,12 +25,18 @@ namespace ImageGenApp
         /// </summary>
         public App()
         {
-            // Required for Windows App SDK single-file deployment (Release builds only)
-#if !DEBUG
-            Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", AppContext.BaseDirectory);
-#endif
-            
-            this.InitializeComponent();
+            try
+            {
+                Console.WriteLine("Starting App constructor...");
+                this.InitializeComponent();
+                Console.WriteLine("InitializeComponent completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"InitializeComponent failed: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
 
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
@@ -65,8 +71,13 @@ namespace ImageGenApp
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            // Apply EF Core migrations / create DB
-            using (var scope = Services.CreateScope())
+            Console.WriteLine("OnLaunched called");
+            
+            try
+            {
+                // Apply EF Core migrations / create DB
+                Console.WriteLine("Starting EF Core migrations...");
+                using (var scope = Services.CreateScope())
             {
                 var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
                 using var dbContext = factory.CreateDbContext();
@@ -100,6 +111,13 @@ namespace ImageGenApp
             Console.WriteLine("Activating window...");
             Window.Activate();
             Console.WriteLine("Window activated - OnLaunched finished");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"OnLaunched failed: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         /// <summary>

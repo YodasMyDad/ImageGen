@@ -1,6 +1,6 @@
-# Single-File Deployment Guide
+# Framework-Dependent Deployment Guide
 
-This guide explains how to build ImageGenApp as a single executable file that you can distribute to your staff without them needing to install .NET.
+This guide explains how to build ImageGenApp as a reliable framework-dependent deployment that requires .NET 9 Desktop Runtime to be installed on target machines.
 
 ## 🚀 Quick Build
 
@@ -8,7 +8,7 @@ This guide explains how to build ImageGenApp as a single executable file that yo
 ```powershell
 .\build-x86.ps1
 ```
-This creates a 32-bit executable that works on **all Windows machines** (32-bit and 64-bit).
+This creates a framework-dependent deployment that works on **all Windows machines** (32-bit and 64-bit).
 
 ### Option 2: Build for Specific Architecture
 ```powershell
@@ -20,29 +20,30 @@ This creates a 32-bit executable that works on **all Windows machines** (32-bit 
 ```powershell
 .\build-all.ps1
 ```
-This builds all three versions at once and shows you the file sizes.
+This builds all three versions at once and shows you the folder sizes.
 
 ## 📁 Output Locations
 
-After building, you'll find the executable here:
-- **x86**: `bin\Release\net9.0-windows10.0.19041.0\win-x86\publish\ImageGenApp.exe`
-- **x64**: `bin\Release\net9.0-windows10.0.19041.0\win-x64\publish\ImageGenApp.exe`
-- **ARM64**: `bin\Release\net9.0-windows10.0.19041.0\win-arm64\publish\ImageGenApp.exe`
+After building, you'll find the application folder here:
+- **x86**: `bin\Release\net9.0-windows10.0.19041.0\win-x86\publish-framework\`
+- **x64**: `bin\Release\net9.0-windows10.0.19041.0\win-x64\publish-framework\`
+- **ARM64**: `bin\Release\net9.0-windows10.0.19041.0\win-arm64\publish-framework\`
 
 ## 📦 What You Get
 
-- **Single .exe file** - No installation required
-- **Self-contained** - Includes .NET runtime and all dependencies
-- **No prerequisites** - Staff don't need .NET installed
-- **Compressed** - Optimized file size with built-in compression
-- **Ready to distribute** - Just copy the .exe file
+- **Small application folder** - ~10-20MB total
+- **Framework-dependent** - Uses system .NET runtime for reliability
+- **Requires .NET 9 Desktop Runtime** - Staff need this installed once
+- **Perfect WinUI compatibility** - No missing DLL or UI issues
+- **Ready to distribute** - Copy the entire folder
 
 ## 💡 Distribution Tips
 
 1. **For maximum compatibility**: Use the x86 build - it works everywhere
-2. **File size**: Expect around 80-120MB per executable (varies by architecture)
-3. **Testing**: Test the .exe on a machine without .NET installed to verify it works
-4. **Antivirus**: Some antivirus software may flag self-contained .exe files - this is normal
+2. **Folder size**: Expect around 10-20MB per deployment folder
+3. **Prerequisites**: Staff need .NET 9 Desktop Runtime installed first
+4. **Testing**: Test on a machine with .NET 9 Desktop Runtime to verify it works
+5. **One-time setup**: Runtime installation is one-time per machine
 
 ## 🛠️ Manual Build (Alternative)
 
@@ -50,23 +51,31 @@ If you prefer using dotnet CLI directly:
 
 ```powershell
 # x86 (recommended for compatibility)
-dotnet publish --configuration Release --publish-profile win-x86
+dotnet publish --configuration Release -p:PublishProfile=win-x86-framework
 
 # x64 (for modern 64-bit machines)
-dotnet publish --configuration Release --publish-profile win-x64
+dotnet publish --configuration Release -p:PublishProfile=win-x64-framework
 
 # ARM64 (for Windows on ARM)
-dotnet publish --configuration Release --publish-profile win-arm64
+dotnet publish --configuration Release -p:PublishProfile=win-arm64-framework
 ```
+
+## 📋 .NET 9 Desktop Runtime Installation
+
+Your staff need to install this once per machine:
+- **Download**: https://dotnet.microsoft.com/download/dotnet/9.0
+- **Choose**: ".NET Desktop Runtime 9.0.9"
+- **Architecture**: Match your app (x86, x64, or ARM64)
+- **Size**: ~50MB download
 
 ## ✅ What's Optimized
 
-The project is configured for optimal single-file deployment with:
-- **Single-file publishing** enabled
-- **Compression** enabled to reduce file size
-- **Native libraries** included for self-extraction
-- **Trimming** enabled to remove unused code (Release builds only)
-- **ReadyToRun** enabled for faster startup (Release builds only)
+The project is configured for optimal framework-dependent deployment with:
+- **Framework-dependent** deployment for reliability
+- **No trimming** to ensure EF Core compatibility
+- **No ReadyToRun** to avoid build issues
+- **WinUI compatibility** ensured with proper configuration
+- **Small deployment size** by using system .NET runtime
 
 ## 🔍 Troubleshooting
 
@@ -75,12 +84,13 @@ The project is configured for optimal single-file deployment with:
 - Ensure you have .NET 9 SDK installed
 - Try running `dotnet clean` first
 
-**Executable won't run on target machine?**
-- Verify Windows version compatibility (minimum Windows 10 version 1809)
-- Check if antivirus is blocking the file
-- Try running as administrator
+**App won't run on target machine?**
+- Verify .NET 9 Desktop Runtime is installed
+- Check Windows version compatibility (minimum Windows 10 version 1809)
+- Try running from command line to see error messages
+- Ensure correct architecture (x86 vs x64 vs ARM64)
 
-**File too large?**
-- The executable includes the entire .NET runtime for portability
-- This is normal for self-contained applications
-- Consider using framework-dependent deployment if all target machines have .NET installed
+**Missing .NET 9 Desktop Runtime?**
+- Download from: https://dotnet.microsoft.com/download/dotnet/9.0
+- Choose ".NET Desktop Runtime" (not SDK)
+- Install once per machine, works for all .NET 9 desktop apps

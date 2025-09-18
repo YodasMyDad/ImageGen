@@ -24,7 +24,8 @@
         <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &lt; 8">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
         
         <!-- Single-file deployment optimizations (only for Release builds) -->
-        <WindowsAppSDKSelfContained Condition="'$(Configuration)' == 'Release'">true</WindowsAppSDKSelfContained>
+        <!-- Disable WindowsAppSDKSelfContained - it can cause UI not to appear in single-file deployments -->
+        <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
         <InvariantGlobalization>false</InvariantGlobalization>
         <DebuggerSupport Condition="'$(Configuration)' == 'Debug'">true</DebuggerSupport>
         <DebuggerSupport Condition="'$(Configuration)' != 'Debug'">false</DebuggerSupport>
@@ -32,6 +33,9 @@
         <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
         <MetadataUpdaterSupport Condition="'$(Configuration)' == 'Debug'">true</MetadataUpdaterSupport>
         <MetadataUpdaterSupport Condition="'$(Configuration)' != 'Debug'">false</MetadataUpdaterSupport>
+        
+        <!-- Disable trimming for reliability with EF Core and WinUI -->
+        <PublishTrimmed>false</PublishTrimmed>
     </PropertyGroup>
 
     <ItemGroup>
