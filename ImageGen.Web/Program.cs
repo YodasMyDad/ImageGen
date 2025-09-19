@@ -46,9 +46,15 @@ app.UseStaticFiles();
 // In development, enable browsing of generated images
 if (app.Environment.IsDevelopment())
 {
+    var imagesPath = Path.Combine(app.Environment.WebRootPath, "images");
+    if (!Directory.Exists(imagesPath))
+    {
+        Directory.CreateDirectory(imagesPath);
+    }
+
     app.UseDirectoryBrowser(new DirectoryBrowserOptions
     {
-        FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.WebRootPath, "images")),
+        FileProvider = new PhysicalFileProvider(imagesPath),
         RequestPath = "/images"
     });
 }
